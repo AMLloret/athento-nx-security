@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component name="org.athento.nuxeo.athento-nx-security.eventhandler-contrib"
+	version="1.0.0">
+
+	<extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
+		point="event-handlers">
+
+		<!-- Your eventhandler contributions here -->
+
+	</extension>
+
+</component>

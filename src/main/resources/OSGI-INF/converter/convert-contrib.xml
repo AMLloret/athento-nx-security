@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<component name="org.athento.nuxeo.athento-nx-security.convert-contrib">
+
+    <extension target="org.nuxeo.ecm.core.convert.service.ConversionServiceImpl"
+               point="converter">
+
+        <!-- Your converter contributions here -->
+
+    </extension>
+
+</component>

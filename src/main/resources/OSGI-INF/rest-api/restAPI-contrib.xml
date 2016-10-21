@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<component name="org.athento.nuxeo.athento-nx-security.restAPI-contrib">
+
+    <extension target="org.nuxeo.ecm.platform.ui.web.restAPI.service.PluggableRestletService"
+               point="restlets">
+
+        <!-- Your restAPI contributions here -->
+
+    </extension>
+
+</component>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<component name="org.athento.nuxeo.athento-nx-security.commandline-contrib">
+
+  <extension target="org.nuxeo.ecm.platform.commandline.executor.service.CommandLineExecutorComponent"
+    point="command">
+
+    <!-- Your commandline contributions here -->
+
+  </extension>
+
+</component>

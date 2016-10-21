@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<component 	name="org.athento.nuxeo.athento-nx-security.operation-contrib"
+	version="1.0.0">
+	
+
+	<extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
+		point="operations">
+
+		<!-- Your operation contributions here -->
+
+	</extension>
+</component>
