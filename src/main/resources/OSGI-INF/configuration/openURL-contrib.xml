@@ -4,7 +4,22 @@
     <extension point="openUrl"
                target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService">
 
-        <!-- Your open-url contributions here -->
+        <!-- Remember password -->
+        <openUrl name="Rememberpassword_enteremail_athento">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/enteremailforremember</grantPattern>
+        </openUrl>
+        <openUrl name="Rememberpassword_change_athento">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/changepassword</grantPattern>
+        </openUrl>
+        <openUrl name="Rememberpassword_send_athento">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/sendpassword</grantPattern>
+        </openUrl>
+        <openUrl name="Rememberpassword_enterpassword_athento">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/enterpassword/.*</grantPattern>
+        </openUrl>
+        <openUrl name="Rememberpassword_Graphical_Resources_athento">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/skin/webSecurity/.*</grantPattern>
+        </openUrl>
 
     </extension>
 

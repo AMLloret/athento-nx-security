@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.athento.athento-nx-security.RememberPasswordService">
+
+  <service>
+    <provide interface="org.athento.nuxeo.security.api.RememberPasswordService"/>
+  </service>
+
+  <implementation
+      class="org.athento.nuxeo.security.core.RememberPasswordComponent"/>
+
+</component>
