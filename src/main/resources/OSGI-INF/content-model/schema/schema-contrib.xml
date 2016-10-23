@@ -3,11 +3,17 @@
 <component name="org.athento.athento-athento-nx-security.schema-contrib"
 		   version="1.0.0">
 
+    <require>org.nuxeo.ecm.directory.types</require>
+
 	<extension target="org.nuxeo.ecm.core.schema.TypeService"
 			   point="schema">
 
+        <!-- Remember password -->
 		<schema name="remember" src="data/schemas/remember.xsd"
 				prefix="remember"/>
+
+		<!-- Extends user schema -->
+		<schema name="user" src="data/schemas/extended_user.xsd" />
 
 	</extension>
 

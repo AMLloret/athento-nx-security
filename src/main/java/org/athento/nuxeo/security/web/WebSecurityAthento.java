@@ -2,9 +2,7 @@ package org.athento.nuxeo.security.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.athento.nuxeo.security.api.AlreadyRememberPasswordException;
-import org.athento.nuxeo.security.api.RememberPasswordException;
-import org.athento.nuxeo.security.api.RememberPasswordService;
+import org.athento.nuxeo.security.api.*;
 import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.platform.web.common.vh.VirtualHostHelper;
@@ -97,6 +95,18 @@ public class WebSecurityAthento extends ModuleRoot {
             LOG.info("Try to validate an already processed remember password");
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestAlreadyProcessed"));
+        } catch (OldPasswordException e) {
+            LOG.info("Old password used");
+            return redisplayFormWithErrorMessage(
+                    "EnterPassword",
+                    ctx.getMessage("label.error.oldPassword"),
+                    formData);
+        } catch (InvalidPasswordException e) {
+            LOG.info("Invalid password");
+            return redisplayFormWithErrorMessage(
+                    "EnterPassword",
+                    ctx.getMessage("label.error.invalidPassword"),
+                    formData);
         } catch (RememberPasswordException ue) {
             LOG.warn("Unable to validate change password request", ue);
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
@@ -198,7 +208,7 @@ public class WebSecurityAthento extends ModuleRoot {
      * @throws Exception on view error
      */
     @GET
-    @Path("enteremailforremember")
+    @Path("recoverypassword")
     public Object entrerEmailForm() throws Exception {
         Map<String, String> data = new HashMap<String, String>();
         return getView("EnterEmail").arg("data", data);
