@@ -6,7 +6,7 @@
 
         <!-- Remember password -->
         <openUrl name="Rememberpassword_enteremail_athento">
-            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/enteremailforremember</grantPattern>
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/recoverypassword</grantPattern>
         </openUrl>
         <openUrl name="Rememberpassword_change_athento">
             <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/changepassword</grantPattern>

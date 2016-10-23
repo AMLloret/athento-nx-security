@@ -3,9 +3,8 @@ package org.athento.nuxeo.security.core;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.athento.nuxeo.security.api.AlreadyRememberPasswordException;
-import org.athento.nuxeo.security.api.RememberPasswordException;
-import org.athento.nuxeo.security.api.RememberPasswordService;
+import org.athento.nuxeo.security.api.*;
+import org.athento.nuxeo.security.util.PasswordHelper;
 import org.athento.nuxeo.security.util.TemplatesHelper;
 import org.nuxeo.common.utils.IdUtils;
 import org.nuxeo.ecm.core.api.*;
@@ -15,7 +14,6 @@ import org.nuxeo.ecm.core.event.Event;
 import org.nuxeo.ecm.core.event.EventContext;
 import org.nuxeo.ecm.core.event.EventService;
 import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
-import org.nuxeo.ecm.platform.usermanager.NuxeoPrincipalImpl;
 import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
@@ -41,6 +39,9 @@ public class RememberPasswordComponent extends DefaultComponent implements
     /** Remember password doctype. */
     public static final String REMEMBER_PASSWORD_DOCTYPE = "RememberPassword";
     public static final String REMEMBER_PASSWORD_CONTAINER_DOCTYPE = "RememberPasswordContainer";
+
+    /** Old password days to able repeat. */
+    public static final int OLD_PASSWORD_DAYS = 10;
 
     protected static Log LOG = LogFactory.getLog(RememberPasswordComponent.class);
 
@@ -212,6 +213,21 @@ public class RememberPasswordComponent extends DefaultComponent implements
             // Update user password
             UserManager userManager = Framework.getService(UserManager.class);
             DocumentModel user = userManager.getUserModel(this.username);
+            // Get current password and save to oldPasswords
+            String currentPassword = (String) user.getPropertyValue("user:password");
+            String oldPasswords = (String) user.getPropertyValue("user:oldPasswords");
+            // Check if the new password is in old password
+            if (oldPasswords != null) {
+                List<String> oldPasswordList = Arrays.asList(oldPasswords.split(","));
+                LOG.info("Log pass " + oldPasswordList);
+                if (PasswordHelper.isOldPassword(password, oldPasswordList, OLD_PASSWORD_DAYS)) {
+                    throw new OldPasswordException("Your new password was a old password");
+                }
+            } else {
+                oldPasswords = "";
+            }
+            oldPasswords += "," + password + ":" + Calendar.getInstance().getTimeInMillis();
+            user.setPropertyValue("user:oldPasswords", oldPasswords);
             user.setPropertyValue("user:password", password);
             userManager.updateUser(user);
             // Transition for remember request
@@ -287,7 +303,9 @@ public class RememberPasswordComponent extends DefaultComponent implements
         }
     }
 
-
+    /**
+     * Remember password validator.
+     */
     protected class RememberPasswordValidator extends UnrestrictedSessionRunner {
 
         protected String uuid;
@@ -308,11 +326,12 @@ public class RememberPasswordComponent extends DefaultComponent implements
 
         @Override
         public void run() throws ClientException {
+            // Check valid password at first
+            if (!PasswordHelper.isValidPassword((String) this.additionnalInfo.get("password"))) {
+                throw new InvalidPasswordException("Invalid password.");
+            }
             DocumentRef idRef = new IdRef(uuid);
-
             DocumentModel rememberPasswordDoc = session.getDocument(idRef);
-
-
             if (rememberPasswordDoc.getLifeCyclePolicy().equals(
                     "rememberPasswordRequest")) {
                     if (rememberPasswordDoc.getCurrentLifeCycleState().equals(
