@@ -3,18 +3,30 @@
 <component name="org.nuxeo.athento.athento-nx-security.lifecycle-contrib"
 		   version="1.0.0">
 
-	<extension target="org.nuxeo.ecm.core.schema.TypeService"
-			   point="doctype">
-
-		<!-- Your doctype contributions here -->
-
+	<extension target="org.nuxeo.ecm.core.lifecycle.LifeCycleService"
+			   point="lifecycle">
+		<lifecycle name="rememberPasswordRequest" defaultInitial="requested">
+			<transitions>
+				<transition name="change" destinationState="changed">
+					<description>Change the password request</description>
+				</transition>
+			</transitions>
+			<states>
+				<state name="requested" description="Default state" initial="true">
+					<transitions>
+						<transition>change</transition>
+					</transitions>
+				</state>
+				<state name="changed" description="Password changed" />
+			</states>
+		</lifecycle>
 	</extension>
 
-	<extension target="org.nuxeo.ecm.platform.types.TypeService"
+	<extension target="org.nuxeo.ecm.core.lifecycle.LifeCycleService"
 			   point="types">
-
-		<!-- Your ui-type contributions here -->
-
+		<types>
+			<type name="RememberPassword">rememberPasswordRequest</type>
+		</types>
 	</extension>
 
 </component>

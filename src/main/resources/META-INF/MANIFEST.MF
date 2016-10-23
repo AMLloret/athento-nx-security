@@ -1,11 +1,12 @@
 Manifest-Version: 1.0
-Bundle-SymbolicName: athento-nx-athento-nx-security
+Bundle-SymbolicName: athento-nx-security
 Bundle-Version: 1.1.0
 Bundle-Name: Athento NX athento-nx-security
 Require-Bundle: org.nuxeo.runtime
 Bundle-ManifestVersion: 2
 Bundle-Vendor: Athento
 Nuxeo-AllowOverride: true
+Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;headless=true
 Nuxeo-Component: OSGI-INF/automation/automation-chain/chain-contrib.xml,
  OSGI-INF/automation/event-handler/eventhandler-contrib.xml,
  OSGI-INF/automation/operation/operation-contrib.xml,
@@ -35,5 +36,6 @@ Nuxeo-Component: OSGI-INF/automation/automation-chain/chain-contrib.xml,
  OSGI-INF/reporting/report-contrib.xml,
  OSGI-INF/rest-api/restAPI-contrib.xml,
  OSGI-INF/vocabulary/vocabulary-contrib.xml,
- OSGI-INF/workflow/workflow-contrib.xml
+ OSGI-INF/workflow/workflow-contrib.xml,
+ OSGI-INF/remember-service-framework.xml
 Created-By: Athento

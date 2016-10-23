@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		   xmlns:nxs="http://nuxeo.org/schemas/remember"
+           targetNamespace="http://nuxeo.org/schemas/remember">
+           
+  <xs:include schemaLocation="base.xsd" />
+
+  <xs:element name="email" type="xs:string"/>
+
+</xs:schema>
