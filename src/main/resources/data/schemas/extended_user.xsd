@@ -19,6 +19,9 @@
     <!-- old passwords (comma-separated) -->
     <xs:element name="oldPasswords" type="xs:string"/>
 
+    <!-- last password modification date -->
+    <xs:element name="lastPasswordModification" type="xs:date" />
+
 </xs:schema>
 
 
