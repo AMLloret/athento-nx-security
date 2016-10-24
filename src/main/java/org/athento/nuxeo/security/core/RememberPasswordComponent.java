@@ -82,12 +82,13 @@ public class RememberPasswordComponent extends DefaultComponent implements
     /**
      * Get remember password model.
      *
-     * @param email
-     * @return
-     * @throws ClientException
+     * @param email is the email
+     * @param mode is the change password mode
+     * @return get remember password model
+     * @throws ClientException on error
      */
-    public DocumentModel getRememberPasswordModel(String email) throws ClientException {
-        RememberPasswordModelCreator creator = new RememberPasswordModelCreator(email);
+    public DocumentModel getRememberPasswordModel(String email, String mode) throws ClientException {
+        RememberPasswordModelCreator creator = new RememberPasswordModelCreator(email, mode);
         creator.runUnrestricted();
         return creator.getRememberPasswordModel();
     }
@@ -112,7 +113,6 @@ public class RememberPasswordComponent extends DefaultComponent implements
         } else {
             root = session.getDocument(targetRef);
         }
-        LOG.info("Root " + root);
         return root;
     }
 
@@ -123,16 +123,25 @@ public class RememberPasswordComponent extends DefaultComponent implements
 
         DocumentModel rememberPasswordModel;
         String email;
+        String mode;
 
-        public RememberPasswordModelCreator(String email) {
+        /**
+         * Constructor.
+         *
+         * @param email is the email
+         * @param mode "recovery" or "expiration"
+         */
+        public RememberPasswordModelCreator(String email, String mode) {
             super(getTargetRepositoryName());
             this.email = email;
+            this.mode = mode;
         }
 
         @Override
         public void run() throws ClientException {
             rememberPasswordModel = session.createDocumentModel(REMEMBER_PASSWORD_DOCTYPE);
             rememberPasswordModel.setPropertyValue("remember:email", email);
+            rememberPasswordModel.setPropertyValue("remember:mode", mode);
         }
 
         public DocumentModel getRememberPasswordModel() {
@@ -217,9 +226,10 @@ public class RememberPasswordComponent extends DefaultComponent implements
             String currentPassword = (String) user.getPropertyValue("user:password");
             String oldPasswords = (String) user.getPropertyValue("user:oldPasswords");
             // Check if the new password is in old password
-            if (oldPasswords != null) {
+            if (oldPasswords != null && !oldPasswords.isEmpty()) {
+                // Decrypt old passwords
+                oldPasswords = new String(PasswordHelper.CipherUtil.decrypt(oldPasswords));
                 List<String> oldPasswordList = Arrays.asList(oldPasswords.split(","));
-                LOG.info("Log pass " + oldPasswordList);
                 if (PasswordHelper.isOldPassword(password, oldPasswordList, OLD_PASSWORD_DAYS)) {
                     throw new OldPasswordException("Your new password was a old password");
                 }
@@ -227,8 +237,11 @@ public class RememberPasswordComponent extends DefaultComponent implements
                 oldPasswords = "";
             }
             oldPasswords += "," + password + ":" + Calendar.getInstance().getTimeInMillis();
+            oldPasswords = new String(PasswordHelper.CipherUtil.encrypt(oldPasswords));
             user.setPropertyValue("user:oldPasswords", oldPasswords);
             user.setPropertyValue("user:password", password);
+            // Set date for the new password
+            user.setPropertyValue("user:lastPasswordModification", new GregorianCalendar());
             userManager.updateUser(user);
             // Transition for remember request
             session.followTransition(rememberPasswordDocument, "change");
@@ -337,11 +350,11 @@ public class RememberPasswordComponent extends DefaultComponent implements
                     if (rememberPasswordDoc.getCurrentLifeCycleState().equals(
                             "changed")) {
                         throw new AlreadyRememberPasswordException(
-                                "Remember password request was processed.");
+                                "Recovery password request was processed.");
                     } else if (!rememberPasswordDoc.getCurrentLifeCycleState().equals(
                             "requested")) {
                         throw new RememberPasswordException(
-                                "Remember password request has not been accepted yet.");
+                                "Recovery password request has not been accepted yet.");
                     }
             }
 
@@ -358,10 +371,12 @@ public class RememberPasswordComponent extends DefaultComponent implements
     protected class ChangePasswordRequestIdValidator extends UnrestrictedSessionRunner {
 
         protected String requestId;
+        protected String mode;
 
-        public ChangePasswordRequestIdValidator(String id) {
+        public ChangePasswordRequestIdValidator(String id, String mode) {
             super(getTargetRepositoryName());
             this.requestId = id;
+            this.mode = mode;
         }
 
         @Override
@@ -372,11 +387,16 @@ public class RememberPasswordComponent extends DefaultComponent implements
                         "Password request with id "
                                 + requestId + " is not found");
             }
+            // Check request mode
+            DocumentModel rememberPasswordDoc = session.getDocument(idRef);
+            if (!rememberPasswordDoc.getPropertyValue("remember:mode").equals(mode)) {
+                throw new RememberPasswordException(
+                        "Recovery password request has invalid mode.");
+            }
             // If request exists, check lifecycle state
-            DocumentModel registrationDoc = session.getDocument(idRef);
-            if (registrationDoc.getCurrentLifeCycleState().equals("changed")) {
+            if (rememberPasswordDoc.getCurrentLifeCycleState().equals("changed")) {
                 throw new AlreadyRememberPasswordException(
-                        "Remember password request has already been processed.");
+                        "Recovery password request has already been processed.");
             }
         }
     }
@@ -400,7 +420,7 @@ public class RememberPasswordComponent extends DefaultComponent implements
             evService.fireEvent(event);
             return evContext;
         } catch (RememberPasswordException ue) {
-            LOG.warn("Error during remember password processing", ue);
+            LOG.warn("Error during recovery password processing", ue);
             throw ue;
         } catch (Exception e) {
             LOG.error("Error witg event service", e);
@@ -460,7 +480,7 @@ public class RememberPasswordComponent extends DefaultComponent implements
         MimeMessage msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(session.getProperty("mail.from")));
         msg.setRecipients(Message.RecipientType.TO,
-                InternetAddress.parse((String) destination, false));
+                InternetAddress.parse(destination, false));
         if (!StringUtils.isBlank(copy)) {
             msg.addRecipient(Message.RecipientType.CC, new InternetAddress(
                     copy, false));
@@ -476,16 +496,19 @@ public class RememberPasswordComponent extends DefaultComponent implements
     /**
      * Create a remember password request.
      *
-     * @return
+     * @param email is the email
+     * @param mode "recovery" or "expiration"
+     * @return is the generated request id
      * @throws RememberPasswordException
      */
     @Override
-    public String submitRememberPasswordRequest(String email)
+    public String submitRememberPasswordRequest(String email, String mode)
             throws RememberPasswordException {
 
-        DocumentModel rememberPasswordModel = getRememberPasswordModel(email);
+        // Create a new remember password model
+        DocumentModel changePasswordModel = getRememberPasswordModel(email, mode);
 
-        RememberPasswordCreator creator = new RememberPasswordCreator(rememberPasswordModel);
+        RememberPasswordCreator creator = new RememberPasswordCreator(changePasswordModel);
         creator.runUnrestricted();
         return creator.getRememberPasswordUuid();
     }
@@ -520,7 +543,7 @@ public class RememberPasswordComponent extends DefaultComponent implements
         for (DocumentModel rememberPasswordDoc : rememberPasswordDocs) {
             if (!rememberPasswordDoc.hasSchema("remember")) {
                 throw new ClientException(
-                        "Remember password document do not contains needed schema");
+                        "Recovery password document do not contains needed schema");
             }
             session.removeDocument(rememberPasswordDoc.getRef());
         }
@@ -535,15 +558,15 @@ public class RememberPasswordComponent extends DefaultComponent implements
      */
     @Override
     public DocumentModelList getRememberPasswordForEmail(
-                                                     final String email) throws ClientException {
+                                                     final String email, final String mode) throws ClientException {
         final DocumentModelList rememberPasswordDocs = new DocumentModelListImpl();
         new UnrestrictedSessionRunner(getTargetRepositoryName()) {
             @Override
             public void run() throws ClientException {
                 String query = "SELECT * FROM Document WHERE ecm:currentLifeCycleState != 'validated' AND"
                         + " ecm:mixinType = 'RememberPassword' AND"
-                        + " remember:email = '%s' AND ecm:isCheckedInVersion = 0";
-                query = String.format(query, email);
+                        + " remember:email = '%s'AND remember:mode = '%s' AND ecm:isCheckedInVersion = 0";
+                query = String.format(query, email, mode);
                 rememberPasswordDocs.addAll(session.query(query));
             }
         }.runUnrestricted();
@@ -554,13 +577,14 @@ public class RememberPasswordComponent extends DefaultComponent implements
      * Check change password request id.
      *
      * @param requestId
+     * @param mode
      * @throws ClientException
      * @throws RememberPasswordException
      */
     @Override
-    public void checkChangePasswordRequestId(final String requestId) throws ClientException,
+    public void checkChangePasswordRequestId(final String requestId, final String mode) throws ClientException,
             RememberPasswordException {
-        ChangePasswordRequestIdValidator runner = new ChangePasswordRequestIdValidator(requestId);
+        ChangePasswordRequestIdValidator runner = new ChangePasswordRequestIdValidator(requestId, mode);
         runner.runUnrestricted();
     }
 

@@ -19,10 +19,11 @@ public interface RememberPasswordService {
     /**
      * Stores a send mail for remember password request and return a unique ID for it.
      *
-     * @param email
+     * @param email is the email
+     * @param mode is the mode of request
      * @return docid of request
      */
-    String submitRememberPasswordRequest(String email)
+    String submitRememberPasswordRequest(String email, String mode)
             throws RememberPasswordException;
 
     /**
@@ -37,9 +38,10 @@ public interface RememberPasswordService {
     /**
      * Check if change password request exists.
      *
-     * @param requestId
+     * @param requestId is the request id
+     * @param mode, change by "recovery" or "expiration"
      */
-    void checkChangePasswordRequestId(String requestId);
+    void checkChangePasswordRequestId(String requestId, String mode);
 
     /**
      * Validate password change.
@@ -56,11 +58,12 @@ public interface RememberPasswordService {
     /**
      * Get remember password request by email.
      *
-     * @param email
+     * @param email is the email
+     * @param mode, change by "recovery" or "expiration"
      * @return
      * @throws ClientException
      */
-    DocumentModelList getRememberPasswordForEmail(final String email) throws ClientException;
+    DocumentModelList getRememberPasswordForEmail(final String email, final String mode) throws ClientException;
 
     /**
      * Change password.

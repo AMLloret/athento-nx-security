@@ -6,5 +6,6 @@
   <xs:include schemaLocation="base.xsd" />
 
   <xs:element name="email" type="xs:string"/>
+  <xs:element name="mode" type="xs:string"/>
 
 </xs:schema>

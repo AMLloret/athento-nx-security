@@ -50,7 +50,7 @@ public class WebSecurityAthento extends ModuleRoot {
 
         // Check if the requestId is an existing one
         try {
-            rememberPasswordService.checkChangePasswordRequestId(requestId);
+            rememberPasswordService.checkChangePasswordRequestId(requestId, ChangePasswordMode.recovery.name());
         } catch (AlreadyRememberPasswordException ape) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestAlreadyProcessed"));
@@ -92,7 +92,7 @@ public class WebSecurityAthento extends ModuleRoot {
             // Change password
             rememberPasswordService.changePassword((DocumentModel) changePasswordData.get("changePasswordDoc"), password);
         } catch (AlreadyRememberPasswordException ape) {
-            LOG.info("Try to validate an already processed remember password");
+            LOG.info("Try to validate an already processed recovery password");
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestAlreadyProcessed"));
         } catch (OldPasswordException e) {
@@ -149,7 +149,7 @@ public class WebSecurityAthento extends ModuleRoot {
                     formData);
         }
         RememberPasswordService rememberPasswordService = getService();
-        rememberPasswordService.submitRememberPasswordRequest(email);
+        rememberPasswordService.submitRememberPasswordRequest(email, ChangePasswordMode.recovery.name());
         // User redirected to the logout page after validating the password
         String webappName = VirtualHostHelper.getWebAppName(getContext().getRequest());
         String logoutUrl = "/" + webappName + "/logout";
@@ -187,7 +187,7 @@ public class WebSecurityAthento extends ModuleRoot {
 
         RememberPasswordService rememberPasswordService = getService();
         try {
-            rememberPasswordService.checkChangePasswordRequestId(requestId);
+            rememberPasswordService.checkChangePasswordRequestId(requestId, ChangePasswordMode.recovery.name());
         } catch (AlreadyRememberPasswordException ape) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestAlreadyProcessed"));
@@ -195,10 +195,38 @@ public class WebSecurityAthento extends ModuleRoot {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestNotExisting", requestId));
         }
-
+        String info = ctx.getMessage("label.webSecurity.info.recoverypassword");
         Map<String, String> data = new HashMap<String, String>();
         data.put("RequestId", requestId);
-        return getView("EnterPassword").arg("data", data);
+        return getView("EnterPassword").arg("data", data).arg("info", info);
+    }
+
+    /**
+     * Enter new password for expiration.
+     *
+     * @param requestId
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path("expiredpassword/{requestId}")
+    public Object validateExpiredPasswordForm(@PathParam("requestId")
+                                       String requestId) throws Exception {
+
+        RememberPasswordService rememberPasswordService = getService();
+        try {
+            rememberPasswordService.checkChangePasswordRequestId(requestId, ChangePasswordMode.expiration.name());
+        } catch (AlreadyRememberPasswordException ape) {
+            return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
+                    ctx.getMessage("label.error.requestAlreadyProcessed"));
+        } catch (RememberPasswordException ue) {
+            return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
+                    ctx.getMessage("label.error.requestNotExisting", requestId));
+        }
+        String info = ctx.getMessage("label.webSecurity.info.expiredpassword");
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("RequestId", requestId);
+        return getView("EnterPassword").arg("data", data).arg("info", info);
     }
 
     /**

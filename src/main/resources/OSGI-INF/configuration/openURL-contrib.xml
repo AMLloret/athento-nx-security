@@ -17,6 +17,9 @@
         <openUrl name="Rememberpassword_enterpassword_athento">
             <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/enterpassword/.*</grantPattern>
         </openUrl>
+        <openUrl name="Rememberpassword_expiredpassword_athento">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/security/expiredpassword/.*</grantPattern>
+        </openUrl>
         <openUrl name="Rememberpassword_Graphical_Resources_athento">
             <grantPattern>${org.nuxeo.ecm.contextPath}/site/skin/webSecurity/.*</grantPattern>
         </openUrl>
