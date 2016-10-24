@@ -50,7 +50,7 @@ public class WebSecurityAthento extends ModuleRoot {
 
         // Check if the requestId is an existing one
         try {
-            rememberPasswordService.checkChangePasswordRequestId(requestId, ChangePasswordMode.recovery.name());
+            rememberPasswordService.checkChangePasswordRequestId(requestId, null);
         } catch (AlreadyRememberPasswordException ape) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestAlreadyProcessed"));
@@ -80,6 +80,9 @@ public class WebSecurityAthento extends ModuleRoot {
                     ctx.getMessage("label.webSecurity.validation.passwordvalidation"),
                     formData);
         }
+        // User redirected to the logout page after validating the password
+        String webappName = VirtualHostHelper.getWebAppName(getContext().getRequest());
+        String logoutUrl = "/" + webappName + "/logout";
         Map<String, Serializable> changePasswordData = new HashMap<String, Serializable>();
         try {
             Map<String, Serializable> additionalInfo = buildAdditionalInfos();
@@ -94,7 +97,7 @@ public class WebSecurityAthento extends ModuleRoot {
         } catch (AlreadyRememberPasswordException ape) {
             LOG.info("Try to validate an already processed recovery password");
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
-                    ctx.getMessage("label.error.requestAlreadyProcessed"));
+                    ctx.getMessage("label.error.requestAlreadyProcessed")).arg("logout", logoutUrl);
         } catch (OldPasswordException e) {
             LOG.info("Old password used");
             return redisplayFormWithErrorMessage(
@@ -110,15 +113,11 @@ public class WebSecurityAthento extends ModuleRoot {
         } catch (RememberPasswordException ue) {
             LOG.warn("Unable to validate change password request", ue);
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
-                    ctx.getMessage("label.errror.requestNotAccepted"));
+                    ctx.getMessage("label.errror.requestNotAccepted")).arg("logout", logoutUrl);
         } catch (ClientException e) {
             LOG.error("Error while validating change password request", e);
             return getView("ChangePasswordErrorTemplate").arg("error", e);
         }
-        // User redirected to the logout page after validating the password
-        String webappName = VirtualHostHelper.getWebAppName(getContext().getRequest());
-        String logoutUrl = "/" + webappName + "/logout";
-
         return getView("PasswordChanged").arg("data", changePasswordData).arg("logout", logoutUrl);
     }
 
@@ -184,16 +183,17 @@ public class WebSecurityAthento extends ModuleRoot {
     @Path("enterpassword/{requestId}")
     public Object validatePasswordForm(@PathParam("requestId")
                                        String requestId) throws Exception {
-
+        String webappName = VirtualHostHelper.getWebAppName(getContext().getRequest());
+        String logoutUrl = "/" + webappName + "/logout";
         RememberPasswordService rememberPasswordService = getService();
         try {
             rememberPasswordService.checkChangePasswordRequestId(requestId, ChangePasswordMode.recovery.name());
         } catch (AlreadyRememberPasswordException ape) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
-                    ctx.getMessage("label.error.requestAlreadyProcessed"));
+                    ctx.getMessage("label.error.requestAlreadyProcessed")).arg("logout", logoutUrl);
         } catch (RememberPasswordException ue) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
-                    ctx.getMessage("label.error.requestNotExisting", requestId));
+                    ctx.getMessage("label.error.requestNotExisting", requestId)).arg("logout", logoutUrl);
         }
         String info = ctx.getMessage("label.webSecurity.info.recoverypassword");
         Map<String, String> data = new HashMap<String, String>();
@@ -212,16 +212,17 @@ public class WebSecurityAthento extends ModuleRoot {
     @Path("expiredpassword/{requestId}")
     public Object validateExpiredPasswordForm(@PathParam("requestId")
                                        String requestId) throws Exception {
-
+        String webappName = VirtualHostHelper.getWebAppName(getContext().getRequest());
+        String logoutUrl = "/" + webappName + "/logout";
         RememberPasswordService rememberPasswordService = getService();
         try {
             rememberPasswordService.checkChangePasswordRequestId(requestId, ChangePasswordMode.expiration.name());
         } catch (AlreadyRememberPasswordException ape) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
-                    ctx.getMessage("label.error.requestAlreadyProcessed"));
+                    ctx.getMessage("label.error.requestAlreadyProcessed")).arg("logout", logoutUrl);
         } catch (RememberPasswordException ue) {
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
-                    ctx.getMessage("label.error.requestNotExisting", requestId));
+                    ctx.getMessage("label.error.requestNotExisting", requestId)).arg("logout", logoutUrl);
         }
         String info = ctx.getMessage("label.webSecurity.info.expiredpassword");
         Map<String, String> data = new HashMap<String, String>();
@@ -238,8 +239,9 @@ public class WebSecurityAthento extends ModuleRoot {
     @GET
     @Path("recoverypassword")
     public Object entrerEmailForm() throws Exception {
+        String info = ctx.getMessage("label.webSecurity.info.recoverypassword");
         Map<String, String> data = new HashMap<String, String>();
-        return getView("EnterEmail").arg("data", data);
+        return getView("EnterEmail").arg("data", data).arg("info", info);
     }
 
     protected Map<String, Serializable> buildAdditionalInfos() {

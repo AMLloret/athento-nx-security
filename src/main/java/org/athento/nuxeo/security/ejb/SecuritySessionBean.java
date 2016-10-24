@@ -1,5 +1,6 @@
 package org.athento.nuxeo.security.ejb;
 
+import freemarker.template.SimpleDate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.athento.nuxeo.security.api.ChangePasswordMode;
@@ -11,14 +12,20 @@ import org.jboss.seam.annotations.Observer;
 import org.jboss.seam.faces.Redirect;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.platform.ui.web.auth.NuxeoAuthenticationFilter;
 import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.ecm.webapp.helpers.EventNames;
 import org.nuxeo.runtime.api.Framework;
+import sun.util.calendar.Gregorian;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
@@ -34,7 +41,10 @@ public class SecuritySessionBean {
     private static final Log LOG = LogFactory.getLog(SecuritySessionBean.class);
 
     /** Number of days to indicate that a password is expired. */
-    private static final int DAYS_TO_EXPIRE_PASSWORD = 30;
+    private static final int DAYS_TO_EXPIRE_PASSWORD = 30 * 12; // One year
+
+    /** Default last modification date. */
+    private static final String DEFAULT_LAST_MODIFICATION = "2016-01-15";
 
     /**
      * Check if user password is expired.
@@ -43,22 +53,41 @@ public class SecuritySessionBean {
      */
     @Observer(EventNames.USER_SESSION_STARTED)
     public void checkExpiredPassword(CoreSession session) {
+        NuxeoAuthenticationFilter a;
         UserManager userManager = Framework.getService(UserManager.class);
         DocumentModel user = userManager.getUserModel(session.getPrincipal().getName());
         if (user != null) {
             GregorianCalendar lastModificationDate =
                     (GregorianCalendar) user.getPropertyValue("user:lastPasswordModification");
-            if (PasswordHelper.isExpiredPassword(lastModificationDate, DAYS_TO_EXPIRE_PASSWORD)) {
+            if (lastModificationDate == null) {
+                String defaultLastModification = Framework.getProperty("password.lastmodification.date", DEFAULT_LAST_MODIFICATION);
+                Date lastModificationDatePassword = null;
                 try {
-                    // Redirect to site to change password
-                    ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
-                    // Create request to change password
-                    RememberPasswordService rememberPasswordService = Framework.getService(RememberPasswordService.class);
-                    String reqId = rememberPasswordService.submitRememberPasswordRequest((String) user.getPropertyValue("user:email"), ChangePasswordMode.expiration.name());
-                    String nuxeoUrl = Framework.getProperty("nuxeo.url");
-                    externalContext.redirect(nuxeoUrl + "/site/security/expiredpassword/" + reqId);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    lastModificationDatePassword = new SimpleDateFormat("yyyy-MM-dd").parse(defaultLastModification);
+                    Calendar gc = GregorianCalendar.getInstance();
+                    gc.setTime(lastModificationDatePassword);
+                    user.setPropertyValue("user:lastPasswordModification", gc);
+                    userManager.updateUser(user);
+                } catch (Exception e) {
+                    LOG.error("Unable to set default last modification password", e);
+                }
+            } else {
+                int daysToExpire = Integer.valueOf(Framework.getProperty("password.expiration.days",
+                        String.valueOf(DAYS_TO_EXPIRE_PASSWORD)));
+                if (PasswordHelper.isExpiredPassword(lastModificationDate, daysToExpire)) {
+                    try {
+                        // Redirect to site to change password
+                        ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+                        // Create request to change password
+                        RememberPasswordService rememberPasswordService = Framework.getService(RememberPasswordService.class);
+                        String reqId = rememberPasswordService
+                                .submitRememberPasswordRequest((String) user.getPropertyValue("user:email"),
+                                        ChangePasswordMode.expiration.name());
+                        String nuxeoUrl = Framework.getProperty("nuxeo.url");
+                        externalContext.redirect(nuxeoUrl + "/site/security/expiredpassword/" + reqId);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

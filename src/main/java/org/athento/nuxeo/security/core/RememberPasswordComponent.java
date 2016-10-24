@@ -29,7 +29,7 @@ import java.io.StringWriter;
 import java.util.*;
 
 /**
- * Remember password componente.
+ * Remember password component.
  *
  * @author <a href="vs@athento.com">Victor Sanchez</a>
  */
@@ -41,15 +41,13 @@ public class RememberPasswordComponent extends DefaultComponent implements
     public static final String REMEMBER_PASSWORD_CONTAINER_DOCTYPE = "RememberPasswordContainer";
 
     /** Old password days to able repeat. */
-    public static final int OLD_PASSWORD_DAYS = 10;
+    public static final int OLD_PASSWORD_DAYS = 30 * 12 * 2; // 2 years
 
     protected static Log LOG = LogFactory.getLog(RememberPasswordComponent.class);
 
     public static final String NUXEO_URL_KEY = "nuxeo.url";
 
     protected String repoName = null;
-
-    protected String testRendering = null;
 
     protected TemplatesHelper templatesHelper = new TemplatesHelper();
 
@@ -230,7 +228,9 @@ public class RememberPasswordComponent extends DefaultComponent implements
                 // Decrypt old passwords
                 oldPasswords = new String(PasswordHelper.CipherUtil.decrypt(oldPasswords));
                 List<String> oldPasswordList = Arrays.asList(oldPasswords.split(","));
-                if (PasswordHelper.isOldPassword(password, oldPasswordList, OLD_PASSWORD_DAYS)) {
+                int oldPasswordDays = Integer.valueOf(Framework.getProperty("password.oldpassword.days",
+                        String.valueOf(OLD_PASSWORD_DAYS)));
+                if (PasswordHelper.isOldPassword(password, oldPasswordList, oldPasswordDays)) {
                     throw new OldPasswordException("Your new password was a old password");
                 }
             } else {
@@ -389,14 +389,14 @@ public class RememberPasswordComponent extends DefaultComponent implements
             }
             // Check request mode
             DocumentModel rememberPasswordDoc = session.getDocument(idRef);
-            if (!rememberPasswordDoc.getPropertyValue("remember:mode").equals(mode)) {
+            if (mode != null && !rememberPasswordDoc.getPropertyValue("remember:mode").equals(mode)) {
                 throw new RememberPasswordException(
-                        "Recovery password request has invalid mode.");
+                        "Change password request has invalid mode.");
             }
             // If request exists, check lifecycle state
             if (rememberPasswordDoc.getCurrentLifeCycleState().equals("changed")) {
                 throw new AlreadyRememberPasswordException(
-                        "Recovery password request has already been processed.");
+                        "Change password request has already been processed.");
             }
         }
     }
@@ -577,7 +577,7 @@ public class RememberPasswordComponent extends DefaultComponent implements
      * Check change password request id.
      *
      * @param requestId
-     * @param mode
+     * @param mode is "recovery" or "expiration" or null for both
      * @throws ClientException
      * @throws RememberPasswordException
      */
