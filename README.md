@@ -1,4 +1,4 @@
-# Athento Security for Nuxeo = 
+# Athento Security for Nuxeo
 
 ## Requirements
 
