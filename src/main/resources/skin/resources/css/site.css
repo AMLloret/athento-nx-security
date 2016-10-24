@@ -48,7 +48,9 @@ a {
   padding:0;
   font-size:100%;
   vertical-align:baseline;
-  background:transparent;}
+  background:transparent;
+  text-decoration: none;
+ }
 
 ins {
   background-color:#b3e1a7;
@@ -193,13 +195,12 @@ input[type="password"]:focus + i {
 .button,
 input[type="button"],
 input[type="submit"] {
-  background-color: #f3f3f3;
+  background-color: #1b89ae;
   border: 0 none rgba(0, 0, 0, 0);
   border-radius: 2px;
-  color: rgba(0, 0, 0, 0.8);
+  color: #fff;
   cursor: pointer;
   display: inline-block;
-  font-size: 70%;
   line-height: normal;
   margin: 0.5em auto 0;
   padding: 0.4em .8em;
@@ -207,12 +208,7 @@ input[type="submit"] {
   text-decoration: none;
   transition: background-color 0.1s ease-in-out 0s;
   vertical-align: baseline;
-  white-space: nowrap;}
-
-input[type="submit"] {
-  background-color: #1b89ae;
-  color: #fff;
-  font-weight: bold;
+  white-space: nowrap;
   font-size: 1em;
   }
 

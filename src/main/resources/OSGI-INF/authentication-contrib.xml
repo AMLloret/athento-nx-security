@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.athento.athento-nx-security.AuthenticationContrib">
+
+    <require>org.nuxeo.ecm.platform.ui.web.auth.defaultConfig</require>
+
+    <extension
+            target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService"
+            point="authenticators">
+
+        <authenticationPlugin name="FORM_CAPTCHA_AUTH" enabled="true"
+                              class="org.athento.nuxeo.security.authenticator.FormCaptchaAuthenticator">
+            <needStartingURLSaving>true</needStartingURLSaving>
+            <parameters>
+                <parameter name="LoginPage">login.jsp</parameter>
+                <parameter name="UsernameKey">user_name</parameter>
+                <parameter name="PasswordKey">user_password</parameter>
+                <parameter name="CaptchaKey">captcha</parameter>
+            </parameters>
+        </authenticationPlugin>
+
+    </extension>
+
+    <extension
+            target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService"
+            point="chain">
+
+        <authenticationChain>
+            <plugins>
+                <plugin>BASIC_AUTH</plugin>
+                <plugin>FORM_CAPTCHA_AUTH</plugin>
+                <plugin>ANONYMOUS_AUTH</plugin>
+                <plugin>WEBSERVICES_AUTH</plugin>
+            </plugins>
+        </authenticationChain>
+
+    </extension>
+
+</component>
