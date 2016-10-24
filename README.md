@@ -1,6 +1,6 @@
-= Athento Security for Nuxeo = 
+# Athento Security for Nuxeo = 
 
-== Requirements ==
+## Requirements
 
 - cipher.key: is a mandatory property used to encrypt the information.
 - password.lastmodification.date: is the default last modification date.
