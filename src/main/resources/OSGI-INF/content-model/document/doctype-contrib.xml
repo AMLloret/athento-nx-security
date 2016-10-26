@@ -11,7 +11,7 @@
         <doctype name="RememberPasswordContainer" extends="Folder">
             <schema name="common" />
             <schema name="dublincore" />
-            <facet name="folderish" />
+            <facet name="Folderish" />
         </doctype>
         <facet name="RememberPassword">
             <schema name="remember"/>
