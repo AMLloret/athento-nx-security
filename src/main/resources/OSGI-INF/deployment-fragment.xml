@@ -21,4 +21,4 @@
                 to="nuxeo.war/WEB-INF/classes/messages_es_ES.properties" addNewLine="true" />
         <delete path="${bundle.fileName}.tmp" />
     </install>
-</fragment>wid
+</fragment>

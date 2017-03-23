@@ -13,7 +13,7 @@
 				prefix="remember"/>
 
 		<!-- Extends user schema -->
-		<schema name="user" src="data/schemas/extended_user.xsd" />
+		<schema name="user" src="data/schemas/extended_user.xsd" override="true"/>
 
 	</extension>
 

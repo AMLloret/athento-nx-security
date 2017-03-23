@@ -123,7 +123,8 @@ public final class PasswordHelper {
 
         private static void init() {
             try {
-                myEncryptionKey = Framework.getProperty("encryption.key");
+                myEncryptionKey = Framework.getProperty("encryption.key",
+                        "u78a7fg7y9776FFYOAD68GOYGsafasdfoG66fdF6DF6dss234");
                 myEncryptionScheme = DESEDE_ENCRYPTION_SCHEME;
                 arrayBytes = myEncryptionKey.getBytes(UNICODE_FORMAT);
                 ks = new DESedeKeySpec(arrayBytes);
@@ -141,12 +142,14 @@ public final class PasswordHelper {
             init();
             String encryptedString = null;
             try {
+                LOG.info("==" + encryptedString);
                 cipher.init(Cipher.ENCRYPT_MODE, key);
                 byte[] plainText = unencryptedString.getBytes(UNICODE_FORMAT);
                 byte[] encryptedText = cipher.doFinal(plainText);
                 encryptedString = new String(Base64.encodeBase64(encryptedText));
+                LOG.info("==2" + encryptedString);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error("Unable to encrypt string", e);
             }
             return encryptedString;
         }
@@ -161,7 +164,7 @@ public final class PasswordHelper {
                 byte[] plainText = cipher.doFinal(encryptedText);
                 decryptedText= new String(plainText);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error("Unable to decript string", e);
             }
             return decryptedText;
         }
