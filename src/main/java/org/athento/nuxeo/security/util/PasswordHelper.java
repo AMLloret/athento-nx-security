@@ -5,15 +5,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.runtime.api.Framework;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.KeySpec;
-import java.util.*;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Password helper.
@@ -35,6 +37,14 @@ public final class PasswordHelper {
 
     /** Min chars. */
     public static final int MIN_SPECIAL = 1;
+
+    private static final String HSSHA = "{SSHA}";
+
+    private static final String HSMD5 = "{SMD5}";
+
+    private static final String SHA1 = "SHA-1";
+
+    private static final String MD5 = "MD5";
 
     /**
      * Check is password is valid.
@@ -169,6 +179,56 @@ public final class PasswordHelper {
             return decryptedText;
         }
 
+    }
+
+    /**
+     * Verify a password against a hashed password.
+     *
+     * @param password the password to verify
+     * @param hashedPassword the hashed password
+     * @return {@code true} if the password matches
+     */
+    public static boolean verifyPassword(String password, String hashedPassword) {
+        String digestalg;
+        int len;
+        if (hashedPassword.startsWith(HSSHA)) {
+            digestalg = SHA1;
+            len = 20;
+        } else if (hashedPassword.startsWith(HSMD5)) {
+            digestalg = MD5;
+            len = 16;
+        } else {
+            return hashedPassword.equals(password);
+        }
+        String digest = hashedPassword.substring(6);
+
+        byte[] bytes = Base64.decodeBase64(digest);
+        if (bytes == null) {
+            // invalid base64
+            return false;
+        }
+        if (bytes.length < len + 2) {
+            // needs hash + at least two bytes of salt
+            return false;
+        }
+        byte[] hash = new byte[len];
+        byte[] salt = new byte[bytes.length - len];
+        System.arraycopy(bytes, 0, hash, 0, hash.length);
+        System.arraycopy(bytes, hash.length, salt, 0, salt.length);
+        return MessageDigest.isEqual(hash, digestWithSalt(password, salt, digestalg));
+    }
+
+    public static byte[] digestWithSalt(String password, byte[] salt, String algorithm) {
+        try {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            md.update(password.getBytes("UTF-8"));
+            md.update(salt);
+            return md.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(algorithm, e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
