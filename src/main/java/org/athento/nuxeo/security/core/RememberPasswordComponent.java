@@ -241,6 +241,22 @@ public class RememberPasswordComponent extends DefaultComponent implements
     }
 
     /**
+     * Check if is valid user by email.
+     *
+     * @param email
+     * @return
+     */
+    @Override
+    public boolean isValidUserByEmail(String email) {
+        // Get user by email
+        UserManager userManager = Framework.getService(UserManager.class);
+        Map<String, Serializable> filter = new HashMap<>();
+        filter.put("email", email);
+        List<DocumentModel> users = userManager.searchUsers(filter, null);
+        return users.size() == 1;
+    }
+
+    /**
      * Get the email for a remember password document.
      */
     protected class RememberPasswordGetEmail extends UnrestrictedSessionRunner {
