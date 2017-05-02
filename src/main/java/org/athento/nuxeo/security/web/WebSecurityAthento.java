@@ -147,11 +147,15 @@ public class WebSecurityAthento extends ModuleRoot {
                     ctx.getMessage("label.webSecurity.emailerror"),
                     formData);
         }
-        RememberPasswordService rememberPasswordService = getService();
-        rememberPasswordService.submitRememberPasswordRequest(email, ChangePasswordMode.recovery.name());
         // User redirected to the logout page after validating the password
         String webappName = VirtualHostHelper.getWebAppName(getContext().getRequest());
         String logoutUrl = "/" + webappName + "/logout";
+        RememberPasswordService rememberPasswordService = getService();
+        boolean valid = rememberPasswordService.isValidUserByEmail(email);
+        if (!valid) {
+            return getView("PasswordSent").arg("logout", logoutUrl);
+        }
+        rememberPasswordService.submitRememberPasswordRequest(email, ChangePasswordMode.recovery.name());
         return getView("PasswordSent").arg("logout", logoutUrl);
     }
 

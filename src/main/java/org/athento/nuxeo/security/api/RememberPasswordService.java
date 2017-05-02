@@ -73,4 +73,11 @@ public interface RememberPasswordService {
      * @throws RememberPasswordException
      */
     void changePassword(DocumentModel email, String password) throws RememberPasswordException;
+
+    /**
+     * Check if is valid user by email.
+     * @param email
+     * @return
+     */
+    boolean isValidUserByEmail(String email);
 }
