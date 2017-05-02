@@ -22,6 +22,9 @@
     <!-- last password modification date -->
     <xs:element name="lastPasswordModification" type="xs:date" />
 
+    <!-- login attemps -->
+    <xs:element name="loginAttempts" type="xs:integer" default="0" />
+
 </xs:schema>
 
 
