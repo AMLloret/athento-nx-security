@@ -2,10 +2,12 @@ package org.athento.nuxeo.security.authenticator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.athento.nuxeo.security.api.CaptchaService;
 import org.nuxeo.common.utils.URIUtils;
 import org.nuxeo.ecm.platform.api.login.UserIdentificationInfo;
 import org.nuxeo.ecm.platform.ui.web.auth.interfaces.NuxeoAuthenticationPlugin;
 import org.nuxeo.ecm.platform.ui.web.auth.plugins.FormAuthenticator;
+import org.nuxeo.runtime.api.Framework;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +27,9 @@ public class FormCaptchaAuthenticator implements NuxeoAuthenticationPlugin {
     private static final String CAPTCHA_ERROR = "Captcha error";
     private static final String LOGIN_CAPTCHA_FAILED = "captchaError";
     public static final String CAPTCHA_UNDEFINED_HASH = "undefinedHash";
+
+    /** Max login attemps. */
+    private static final int MAX_LOGIN_ATTEMPS = 5;
 
     protected String loginPage = "login.jsp";
 
@@ -105,6 +110,11 @@ public class FormCaptchaAuthenticator implements NuxeoAuthenticationPlugin {
                     hash)) {
                 httpRequest.setAttribute(LOGIN_ERROR, CAPTCHA_ERROR);
                 return null;
+            } else {
+                LOG.info("Reseting login attempts...");
+                // Reset login failed attempts
+                CaptchaService captchaService = Framework.getService(CaptchaService.class);
+                captchaService.resetLoginFailedAttempts(userName);
             }
         }
         if (userName == null || userName.length() == 0) {
