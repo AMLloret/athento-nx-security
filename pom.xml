@@ -175,7 +175,32 @@
             </snapshots>
         </repository>
     </repositories>
+    <pluginRepositories>
 
+         <pluginRepository>
+            <id>public</id>
+            <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
+            <name>Nuxeo releases</name>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>athento-public</id>
+            <name>Athento Releases</name>
+            <url>http://maven2.yerbabuena.es/artifactory/athento-public</url>
+            <layout>default</layout>
+            <snapshots>
+                  <enabled>false</enabled>
+             </snapshots>
+             <releases>
+                  <enabled>true</enabled>
+             </releases>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
             <plugin>
