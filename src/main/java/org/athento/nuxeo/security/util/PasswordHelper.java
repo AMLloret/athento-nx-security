@@ -152,12 +152,10 @@ public final class PasswordHelper {
             init();
             String encryptedString = null;
             try {
-                LOG.info("==" + encryptedString);
                 cipher.init(Cipher.ENCRYPT_MODE, key);
                 byte[] plainText = unencryptedString.getBytes(UNICODE_FORMAT);
                 byte[] encryptedText = cipher.doFinal(plainText);
                 encryptedString = new String(Base64.encodeBase64(encryptedText));
-                LOG.info("==2" + encryptedString);
             } catch (Exception e) {
                 LOG.error("Unable to encrypt string", e);
             }
