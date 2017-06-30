@@ -4,7 +4,15 @@
     <extension target="org.nuxeo.ecm.platform.ui.web.restAPI.service.PluggableRestletService"
                point="restlets">
 
-        <!-- Your restAPI contributions here -->
+        <restletPlugin
+                name="athDownload"
+                class="org.athento.nuxeo.security.restlet.DownloadRestlet"
+                enabled="true"
+                useSeam="true">
+            <urlPatterns>
+                <urlPattern>/athdownload/{repo}/{docid}/{xpath}</urlPattern>
+            </urlPatterns>
+        </restletPlugin>
 
     </extension>
 

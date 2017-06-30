@@ -6,7 +6,7 @@
 	<extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
 		point="operations">
 
-		<!-- Your operation contributions here -->
+		<operation class="org.athento.nuxeo.security.operation.GetPublicURLOperation" />
 
 	</extension>
 </component>
