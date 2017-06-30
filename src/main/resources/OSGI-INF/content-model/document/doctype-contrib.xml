@@ -16,6 +16,9 @@
         <facet name="RememberPassword">
             <schema name="remember"/>
         </facet>
+        <facet name="Secure">
+            <schema name="athentosec"/>
+        </facet>
     </extension>
 
     <extension target="org.nuxeo.ecm.platform.types.TypeService"

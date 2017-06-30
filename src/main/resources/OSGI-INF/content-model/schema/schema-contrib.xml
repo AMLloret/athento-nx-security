@@ -15,6 +15,9 @@
 		<!-- Extends user schema -->
 		<schema name="user" src="data/schemas/extended_user.xsd" override="true"/>
 
+		<!-- Extends security to document-->
+		<schema name="athentosec" prefix="athentosec" src="data/schemas/extended_security.xsd" override="true"/>
+
 	</extension>
 
 </component>

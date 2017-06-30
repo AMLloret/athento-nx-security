@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		   xmlns:nxs="http://nuxeo.org/schemas/extended-security"
+           targetNamespace="http://nuxeo.org/schemas/extended-security">
+           
+  <xs:include schemaLocation="base.xsd" />
+
+  <xs:element name="principals" type="xs:string"/>
+  <xs:element name="expirationDate" type="xs:date"/>
+  <xs:element name="ips" type="xs:string"/>
+
+</xs:schema>
