@@ -82,6 +82,7 @@ public class GetPublicURLOperation {
             doc.setPropertyValue("athentosec:ips", ips);
             doc.setPropertyValue("athentosec:principals", principals);
             doc.setPropertyValue("athentosec:expirationDate", expirationDate);
+            doc.setPropertyValue("athentosec:xpath", xpath);
             session.saveDocument(doc);
         }
         String host = Framework.getProperty("nuxeo.url");

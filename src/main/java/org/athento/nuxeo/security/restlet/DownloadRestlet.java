@@ -87,7 +87,6 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
             return;
         }
 
-
         try {
             navigationContext.setCurrentServerLocation(new RepositoryLocation(
                     repo));
@@ -95,7 +94,7 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
             targetDocument = documentManager.getDocument(new IdRef(docid));
             username = documentManager.getPrincipal().getName();
             // Check if document has extended-security schema to check access
-            if (!hasGrantedAccess(req, targetDocument)) {
+            if (!hasGrantedAccess(req, targetDocument, xpath)) {
                 handleError(res, "Access to document " + targetDocument.getId() + " is not allowed");
                 return;
             }
@@ -109,20 +108,22 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
         try {
             blob = (Blob) targetDocument.getPropertyValue(xpath);
             if (blob == null) {
-                handleError(res, "Document " + targetDocument.getId() + " has no content.");
+                handleError(res, "Document " + targetDocument.getId() + " has no content for xpath " + xpath);
                 return;
             }
         } catch (PropertyNotFoundException | ClassCastException e) {
-            LOG.error("Document " + targetDocument.getId() + " has no content");
+            LOG.error("Document " + targetDocument.getId() + " has no content with xpath " + xpath);
             handleError(res, e);
             return;
         }
+
+        String filename = getQueryParamValue(req, "filename", blob.getFilename());
 
         HttpServletResponse response = getHttpResponse(res);
         response.setHeader("Cache-Control", "no-cache");
         response.setHeader("Pragma", "no-cache");
         response.setContentType(blob.getMimeType());
-        response.setHeader("Content-Disposition", disposition + ";filename=" + blob.getFilename());
+        response.setHeader("Content-Disposition", disposition + ";filename=" + filename);
         long fileSize = blob.getLength();
         if(fileSize > 0L) {
             response.setContentLength((int)fileSize);
@@ -140,9 +141,15 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
      * @param doc
      * @return
      */
-    private boolean hasGrantedAccess(Request req, DocumentModel doc) {
+    private boolean hasGrantedAccess(Request req, DocumentModel doc, String xpath) {
         boolean accessGranted = true;
         if (doc.hasSchema("athentosec")) {
+            // Check content xpath
+            String xpathSec = (String) doc.getPropertyValue("athentosec:xpath");
+            if (!xpath.equals(xpathSec)) {
+                LOG.info("XPath control access");
+                return false;
+            }
             // Check IPs
             String ips = (String) doc.getPropertyValue("athentosec:ips");
             accessGranted = checkAllowedIps(req, ips);
