@@ -24,6 +24,11 @@
             <grantPattern>${org.nuxeo.ecm.contextPath}/site/skin/webSecurity/.*</grantPattern>
         </openUrl>
 
+        <!-- Download -->
+        <openUrl name="AthentoPublicDownload">
+            <grantPattern>/nuxeo/restAPI/download/.*</grantPattern>
+        </openUrl>
+
     </extension>
 
 </component>
