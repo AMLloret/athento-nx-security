@@ -89,6 +89,7 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
 
 
         try {
+            Framework.login();
             navigationContext.setCurrentServerLocation(new RepositoryLocation(
                     repo));
             documentManager = navigationContext.getOrCreateDocumentManager();
@@ -99,7 +100,7 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
                 handleError(res, "Access to document " + targetDocument.getId() + " is not allowed");
                 return;
             }
-        } catch (ClientException e) {
+        } catch (Exception e) {
             LOG.error("Unable to get document from session", e);
             handleError(res, e);
             return;
