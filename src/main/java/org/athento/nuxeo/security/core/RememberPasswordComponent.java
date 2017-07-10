@@ -185,11 +185,11 @@ public class RememberPasswordComponent extends DefaultComponent implements
             rememberPasswordUuid = sendRememberPasswordModel.getId();
 
             // Send email
-            Map<String, Serializable> additionnalInfo = new HashMap<String, Serializable>();
+            /*Map<String, Serializable> additionnalInfo = new HashMap<String, Serializable>();
             if (!additionnalInfo.containsKey("enterPasswordUrl")) {
                 additionnalInfo.put("enterPasswordUrl", buildEnterPasswordUrl());
             }
-            sendChangePasswordEmail(additionnalInfo, sendRememberPasswordModel);
+            sendChangePasswordEmail(additionnalInfo, sendRememberPasswordModel);*/
 
             // Send event
             sendEvent(session, sendRememberPasswordModel, getNameEventSendRememberPasswordSubmitted());
@@ -473,10 +473,8 @@ public class RememberPasswordComponent extends DefaultComponent implements
     @Override
     public String submitRememberPasswordRequest(String email, String mode)
             throws RememberPasswordException {
-
         // Create a new remember password model
         DocumentModel changePasswordModel = getRememberPasswordModel(email, mode);
-
         RememberPasswordCreator creator = new RememberPasswordCreator(changePasswordModel);
         creator.runUnrestricted();
         return creator.getRememberPasswordUuid();
@@ -492,8 +490,7 @@ public class RememberPasswordComponent extends DefaultComponent implements
      * @throws RememberPasswordException
      */
     @Override
-    public Map<String, Serializable> validatePasswordChange(String requestId, Map<String, Serializable> additionalInfo) throws ClientException,
-            RememberPasswordException {
+    public Map<String, Serializable> validatePasswordChange(String requestId, Map<String, Serializable> additionalInfo) {
         RememberPasswordValidator validator = new RememberPasswordValidator(requestId, additionalInfo);
         validator.runUnrestricted();
         return validator.getRememberPasswordData();
