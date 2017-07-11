@@ -14,7 +14,7 @@
 ### Document security
 
 - Apply athentosec security schema to apply access control with:
- * Principals
- * Signed tokens
- * IPs
- * Content xpath
+  - Principals
+  - Signed tokens
+  - IPs
+  - Content xpath
