@@ -18,3 +18,4 @@
   - Signed tokens
   - IPs
   - Content xpath
+  - Expiration date
