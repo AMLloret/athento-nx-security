@@ -16,6 +16,7 @@ import java.security.spec.KeySpec;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Password helper.
@@ -45,6 +46,8 @@ public final class PasswordHelper {
     private static final String SHA1 = "SHA-1";
 
     private static final String MD5 = "MD5";
+
+    private static final String SEED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     /**
      * Check is password is valid.
@@ -228,5 +231,24 @@ public final class PasswordHelper {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Generate a security token.
+     *
+     * @param size
+     * @return
+     */
+    public static final String generateSecToken(int size) {
+        char[] chars = SEED_CHARS.toCharArray();
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < size; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+
 
 }

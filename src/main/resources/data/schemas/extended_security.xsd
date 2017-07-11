@@ -9,5 +9,6 @@
   <xs:element name="expirationDate" type="xs:date"/>
   <xs:element name="ips" type="xs:string"/>
   <xs:element name="xpath" type="xs:string"/>
+  <xs:element name="sign" type="nxs:stringList" />
 
 </xs:schema>

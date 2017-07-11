@@ -2,6 +2,7 @@ package org.athento.nuxeo.security.restlet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.athento.nuxeo.security.util.SignHelper;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;
@@ -15,12 +16,11 @@ import org.nuxeo.runtime.api.Framework;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 
-import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -59,6 +59,7 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
 
         // Get parameters from restlet query
         String disposition = getQueryParamValue(req, "disposition", "attachment");
+        String token = getQueryParamValue(req, "t", null);
 
         if (xpath == null || xpath.isEmpty()) {
             xpath = "file:content";
@@ -88,17 +89,18 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
         }
 
         try {
+            Framework.login();
             navigationContext.setCurrentServerLocation(new RepositoryLocation(
                     repo));
             documentManager = navigationContext.getOrCreateDocumentManager();
             targetDocument = documentManager.getDocument(new IdRef(docid));
             username = documentManager.getPrincipal().getName();
             // Check if document has extended-security schema to check access
-            if (!hasGrantedAccess(req, targetDocument, xpath)) {
+            if (!hasGrantedAccess(req, targetDocument, xpath, token)) {
                 handleError(res, "Access to document " + targetDocument.getId() + " is not allowed");
                 return;
             }
-        } catch (ClientException e) {
+        } catch (Exception e) {
             LOG.error("Unable to get document from session", e);
             handleError(res, e);
             return;
@@ -138,41 +140,68 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
     /**
      * Check granted access to document.
      *
+     * @param req
      * @param doc
+     * @param xpath
+     * @param token
      * @return
      */
-    private boolean hasGrantedAccess(Request req, DocumentModel doc, String xpath) {
+    private boolean hasGrantedAccess(Request req, DocumentModel doc, String xpath, String token) {
         boolean accessGranted = true;
         if (doc.hasSchema("athentosec")) {
             // Check content xpath
             String xpathSec = (String) doc.getPropertyValue("athentosec:xpath");
             if (!xpath.equals(xpathSec)) {
-                LOG.info("XPath control access");
                 return false;
             }
             // Check IPs
             String ips = (String) doc.getPropertyValue("athentosec:ips");
             accessGranted = checkAllowedIps(req, ips);
             if (!accessGranted) {
-                LOG.info("IP control access");
                 return false;
             }
             // Check principals
             String principals = (String) doc.getPropertyValue("athentosec:principals");
             accessGranted = checkAllowedPrincipals(principals);
             if (!accessGranted) {
-                LOG.info("Principal control access");
                 return false;
             }
             // Check expiration date
             GregorianCalendar expirationDate = (GregorianCalendar) doc.getPropertyValue("athentosec:expirationDate");
             accessGranted = checkAllowedExpirationDate(expirationDate);
             if (!accessGranted) {
-                LOG.info("Expiration date control access");
+                return false;
+            }
+            // Check signed token
+            ArrayList<String> signedTokens = (ArrayList) doc.getPropertyValue("athentosec:sign");
+            accessGranted = checkSignedToken(token, signedTokens);
+            if (!accessGranted) {
                 return false;
             }
         }
         return accessGranted;
+    }
+
+    /**
+     * Check RSA-1 signed token valid.
+     *
+     * @param signedTokens
+     * @return
+     */
+    private boolean checkSignedToken(String token, ArrayList<String> signedTokens) {
+        if (signedTokens == null) {
+            if (token != null) {
+                return false;
+            }
+            return true;
+        }
+        for (String signedToken : signedTokens) {
+            boolean valid = SignHelper.verifySignedToken(token, signedToken);
+            if (valid) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

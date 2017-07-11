@@ -2,6 +2,8 @@ package org.athento.nuxeo.security.operation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.athento.nuxeo.security.util.PasswordHelper;
+import org.athento.nuxeo.security.util.SignHelper;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
 import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
@@ -12,7 +14,9 @@ import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.PathRef;
 import org.nuxeo.runtime.api.Framework;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Generate a public URL to download a document content.
@@ -42,6 +46,9 @@ public class GetPublicURLOperation {
 
     @Param(name = "ips", required = false, description = "It is the allowed IPs, separated by comma")
     protected String ips;
+
+    @Param(name = "signedToken", required = false, description = "Use a signed token to verify download document")
+    protected boolean signedToken = false;
 
     @Param(name = "expirationDate", required = false, description = "It is expiration date access")
     protected Date expirationDate;
@@ -77,17 +84,30 @@ public class GetPublicURLOperation {
      */
     @OperationMethod
     public String run(DocumentModel doc) throws Exception {
+        String token = null;
         // Update document with security information
         if (doc.hasSchema("athentosec")) {
             doc.setPropertyValue("athentosec:ips", ips);
             doc.setPropertyValue("athentosec:principals", principals);
             doc.setPropertyValue("athentosec:expirationDate", expirationDate);
             doc.setPropertyValue("athentosec:xpath", xpath);
+            if (signedToken) {
+                // Sign a new token
+                token = PasswordHelper.generateSecToken(128);
+                String sign = SignHelper.getSignedToken(token);
+                ArrayList<String> signs = (ArrayList) doc.getPropertyValue("athentosec:sign");
+                signs.add(sign);
+                doc.setPropertyValue("athentosec:sign", signs);
+            }
             session.saveDocument(doc);
         }
         String host = Framework.getProperty("nuxeo.url");
         // Return download URL
-        return String.format(DOWNLOAD_RESTLET_STRING, host, "default", doc.getId(), xpath, disposition);
+        String url = String.format(DOWNLOAD_RESTLET_STRING, host, "default", doc.getId(), xpath, disposition);
+        if (signedToken) {
+            url += "&t=" + token;
+        }
+        return url;
     }
 
 }
