@@ -1,14 +1,29 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-		   xmlns:nxs="http://nuxeo.org/schemas/extended-security"
+           xmlns:es="http://nuxeo.org/schemas/extended-security"
+           elementFormDefault="qualified"
            targetNamespace="http://nuxeo.org/schemas/extended-security">
-           
-  <xs:include schemaLocation="base.xsd" />
 
-  <xs:element name="principals" type="xs:string"/>
-  <xs:element name="expirationDate" type="xs:date"/>
-  <xs:element name="ips" type="xs:string"/>
-  <xs:element name="xpath" type="xs:string"/>
-  <xs:element name="sign" type="nxs:stringList" />
+    <xs:include schemaLocation="base.xsd"/>
+
+    <xs:element name="principals" type="xs:string"/>
+    <xs:element name="expirationDate" type="xs:date"/>
+    <xs:element name="ips" type="xs:string"/>
+    <xs:element name="xpath" type="xs:string"/>
+
+    <xs:complexType name="tokenType">
+        <xs:sequence>
+            <xs:element name="sign" type="xs:string"/>
+            <xs:element name="onlyOneUse" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="tokensType">
+        <xs:sequence>
+            <xs:element name="token" type="es:tokenType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="tokens" type="es:tokensType"/>
 
 </xs:schema>

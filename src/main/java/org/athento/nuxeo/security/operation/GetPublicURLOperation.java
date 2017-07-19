@@ -2,6 +2,7 @@ package org.athento.nuxeo.security.operation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.athento.nuxeo.security.api.TokenException;
 import org.athento.nuxeo.security.util.PasswordHelper;
 import org.athento.nuxeo.security.util.SignHelper;
 import org.nuxeo.ecm.automation.core.annotations.Context;
@@ -14,9 +15,8 @@ import org.nuxeo.ecm.core.api.IdRef;
 import org.nuxeo.ecm.core.api.PathRef;
 import org.nuxeo.runtime.api.Framework;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Generate a public URL to download a document content.
@@ -50,6 +50,9 @@ public class GetPublicURLOperation {
     @Param(name = "signedToken", required = false, description = "Use a signed token to verify download document")
     protected boolean signedToken = false;
 
+    @Param(name = "onlyOneUse", required = false, description = "Only one use for download document")
+    protected boolean onlyOneUse = false;
+
     @Param(name = "expirationDate", required = false, description = "It is expiration date access")
     protected Date expirationDate;
 
@@ -58,6 +61,9 @@ public class GetPublicURLOperation {
 
     @Param(name = "disposition", required = false, description = "It is the download disposition mode", values = { "attachment", "inline" })
     protected String disposition = "attachment";
+
+    @Param(name = "auth", required = false, description = "It is check metadata list for authorization")
+    protected String auth;
 
     /**
      * Operation method.
@@ -93,11 +99,7 @@ public class GetPublicURLOperation {
             doc.setPropertyValue("athentosec:xpath", xpath);
             if (signedToken) {
                 // Sign a new token
-                token = PasswordHelper.generateSecToken(128);
-                String sign = SignHelper.getSignedToken(token);
-                ArrayList<String> signs = (ArrayList) doc.getPropertyValue("athentosec:sign");
-                signs.add(sign);
-                doc.setPropertyValue("athentosec:sign", signs);
+                token = addNewSignedToken(doc);
             }
             session.saveDocument(doc);
         }
@@ -107,7 +109,29 @@ public class GetPublicURLOperation {
         if (signedToken) {
             url += "&t=" + token;
         }
+        if (auth != null) {
+            url += "&auth=" + auth;
+        }
         return url;
+    }
+
+    /**
+     * Add new signed token.
+     *
+     * @param doc
+     * @return new signed token
+     * @throws TokenException on generation error
+     */
+    private String addNewSignedToken(DocumentModel doc) throws TokenException {
+        String token = PasswordHelper.generateSecToken(128);
+        String signedToken = SignHelper.getSignedToken(token);
+        ArrayList<Map<String, Serializable>> tokens = (ArrayList) doc.getPropertyValue("athentosec:tokens");
+        HashMap<String, Serializable> tokenInfo = new HashMap<>();
+        tokenInfo.put("sign", signedToken);
+        tokenInfo.put("onlyOneUse", onlyOneUse);
+        tokens.add(tokenInfo);
+        doc.setPropertyValue("athentosec:tokens", tokens);
+        return token;
     }
 
 }

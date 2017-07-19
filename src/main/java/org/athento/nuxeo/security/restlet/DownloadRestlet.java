@@ -18,12 +18,10 @@ import org.restlet.data.Response;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.*;
 
 /**
  * Download restlet with stateless no auth. Check extended-security schema to check access to document.
@@ -59,7 +57,12 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
 
         // Get parameters from restlet query
         String disposition = getQueryParamValue(req, "disposition", "attachment");
+        
         String token = getQueryParamValue(req, "t", null);
+        if (token == null) {
+            handleError(res, "You need the signed token to download");
+            return;
+        }
 
         if (xpath == null || xpath.isEmpty()) {
             xpath = "file:content";
@@ -96,7 +99,7 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
             targetDocument = documentManager.getDocument(new IdRef(docid));
             username = documentManager.getPrincipal().getName();
             // Check if document has extended-security schema to check access
-            if (!hasGrantedAccess(req, targetDocument, xpath, token)) {
+            if (!hasGrantedAccess(documentManager, req, targetDocument, xpath, token)) {
                 handleError(res, "Access to document " + targetDocument.getId() + " is not allowed");
                 return;
             }
@@ -140,14 +143,15 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
     /**
      * Check granted access to document.
      *
+     * @param session
      * @param req
      * @param doc
      * @param xpath
      * @param token
      * @return
      */
-    private boolean hasGrantedAccess(Request req, DocumentModel doc, String xpath, String token) {
-        boolean accessGranted = true;
+    private boolean hasGrantedAccess(CoreSession session, Request req, DocumentModel doc, String xpath, String token) {
+        boolean accessGranted = false;
         if (doc.hasSchema("athentosec")) {
             // Check content xpath
             String xpathSec = (String) doc.getPropertyValue("athentosec:xpath");
@@ -172,12 +176,16 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
             if (!accessGranted) {
                 return false;
             }
-            // Check signed token
-            ArrayList<String> signedTokens = (ArrayList) doc.getPropertyValue("athentosec:sign");
+            // Check signed token (with onlyOneUse to remove it)
+            ArrayList<Map<String, Serializable>> signedTokens = (ArrayList) doc.getPropertyValue("athentosec:tokens");
             accessGranted = checkSignedToken(token, signedTokens);
             if (!accessGranted) {
                 return false;
             }
+            // Update tokens for document
+            doc.setPropertyValue("athentosec:tokens", signedTokens);
+            session.saveDocument(doc);
+            accessGranted = true;
         }
         return accessGranted;
     }
@@ -185,23 +193,37 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
     /**
      * Check RSA-1 signed token valid.
      *
+     * @param token
      * @param signedTokens
      * @return
      */
-    private boolean checkSignedToken(String token, ArrayList<String> signedTokens) {
+    private boolean checkSignedToken(String token, ArrayList<Map<String, Serializable>> signedTokens) {
         if (signedTokens == null) {
             if (token != null) {
                 return false;
             }
             return true;
         }
-        for (String signedToken : signedTokens) {
-            boolean valid = SignHelper.verifySignedToken(token, signedToken);
-            if (valid) {
-                return true;
+        boolean valid = false;
+        int validTokenIndex = -1;
+        for (int i = 0; i < signedTokens.size(); i++) {
+            Map<String, Serializable> tokenData = signedTokens.get(i);
+            String signedToken = (String) tokenData.get("sign");
+            boolean validTmp = SignHelper.verifySignedToken(token, signedToken);
+            if (validTmp) {
+                // Check if token is only one use
+                boolean onlyOneUseToken = (Boolean) tokenData.get("onlyOneUse");
+                if (onlyOneUseToken) {
+                    validTokenIndex = i;
+                }
+                valid = true;
+                break;
             }
         }
-        return false;
+        if (validTokenIndex != -1) {
+            signedTokens.remove(validTokenIndex);
+        }
+        return valid;
     }
 
     /**
