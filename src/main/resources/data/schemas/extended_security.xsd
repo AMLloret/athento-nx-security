@@ -7,7 +7,6 @@
     <xs:include schemaLocation="base.xsd"/>
 
     <xs:element name="principals" type="xs:string"/>
-    <xs:element name="expirationDate" type="xs:date"/>
     <xs:element name="ips" type="xs:string"/>
     <xs:element name="xpath" type="xs:string"/>
 
@@ -15,6 +14,7 @@
         <xs:sequence>
             <xs:element name="sign" type="xs:string"/>
             <xs:element name="onlyOneUse" type="xs:boolean"/>
+            <xs:element name="expirationDate" type="xs:date"/>
         </xs:sequence>
     </xs:complexType>
 

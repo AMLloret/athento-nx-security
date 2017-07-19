@@ -30,7 +30,7 @@ public class GetPublicURLOperation {
 	/** Log. */
 	private static final Log LOG = LogFactory.getLog(GetPublicURLOperation.class);
 
-	private static final String DOWNLOAD_RESTLET_STRING = "%s/restAPI/athdownload/%s/%s/%s?disposition=%s";
+	private static final String DOWNLOAD_RESTLET_STRING = "%s/restAPI/athdownload/%s/%s/%s?d=%s&t=%s";
 
     /** Operation ID. */
 	public static final String ID = "Athento.GetPublicURL";
@@ -46,9 +46,6 @@ public class GetPublicURLOperation {
 
     @Param(name = "ips", required = false, description = "It is the allowed IPs, separated by comma")
     protected String ips;
-
-    @Param(name = "signedToken", required = false, description = "Use a signed token to verify download document")
-    protected boolean signedToken = false;
 
     @Param(name = "onlyOneUse", required = false, description = "Only one use for download document")
     protected boolean onlyOneUse = false;
@@ -95,20 +92,20 @@ public class GetPublicURLOperation {
         if (doc.hasSchema("athentosec")) {
             doc.setPropertyValue("athentosec:ips", ips);
             doc.setPropertyValue("athentosec:principals", principals);
-            doc.setPropertyValue("athentosec:expirationDate", expirationDate);
             doc.setPropertyValue("athentosec:xpath", xpath);
-            if (signedToken) {
-                // Sign a new token
+            // Sign a new token
+            try {
                 token = addNewSignedToken(doc);
+            } catch (TokenException e) {
+                LOG.error("Unable to generate new signed token", e);
             }
             session.saveDocument(doc);
+        } else {
+            throw new TokenException("Unable to generate the public url for document type " + doc.getType());
         }
         String host = Framework.getProperty("nuxeo.url");
         // Return download URL
-        String url = String.format(DOWNLOAD_RESTLET_STRING, host, "default", doc.getId(), xpath, disposition);
-        if (signedToken) {
-            url += "&t=" + token;
-        }
+        String url = String.format(DOWNLOAD_RESTLET_STRING, host, "default", doc.getId(), xpath, disposition, token);
         if (auth != null) {
             url += "&auth=" + auth;
         }
@@ -129,6 +126,7 @@ public class GetPublicURLOperation {
         HashMap<String, Serializable> tokenInfo = new HashMap<>();
         tokenInfo.put("sign", signedToken);
         tokenInfo.put("onlyOneUse", onlyOneUse);
+        tokenInfo.put("expirationDate", expirationDate);
         tokens.add(tokenInfo);
         doc.setPropertyValue("athentosec:tokens", tokens);
         return token;
