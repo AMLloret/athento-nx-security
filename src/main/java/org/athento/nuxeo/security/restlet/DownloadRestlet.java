@@ -56,8 +56,8 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
         String xpath = (String) req.getAttributes().get("xpath");
 
         // Get parameters from restlet query
-        String disposition = getQueryParamValue(req, "disposition", "attachment");
-        
+        String disposition = getQueryParamValue(req, "d", "attachment");
+
         String token = getQueryParamValue(req, "t", null);
         if (token == null) {
             handleError(res, "You need the signed token to download");
@@ -170,12 +170,6 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
             if (!accessGranted) {
                 return false;
             }
-            // Check expiration date
-            GregorianCalendar expirationDate = (GregorianCalendar) doc.getPropertyValue("athentosec:expirationDate");
-            accessGranted = checkAllowedExpirationDate(expirationDate);
-            if (!accessGranted) {
-                return false;
-            }
             // Check signed token (with onlyOneUse to remove it)
             ArrayList<Map<String, Serializable>> signedTokens = (ArrayList) doc.getPropertyValue("athentosec:tokens");
             accessGranted = checkSignedToken(token, signedTokens);
@@ -211,6 +205,13 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
             String signedToken = (String) tokenData.get("sign");
             boolean validTmp = SignHelper.verifySignedToken(token, signedToken);
             if (validTmp) {
+                // Check expiration date
+                GregorianCalendar expirationDate = (GregorianCalendar) tokenData.get("expirationDate");
+                validTmp = checkAllowedExpirationDate(expirationDate);
+                if (!validTmp) {
+                    LOG.warn("Date expired for download request");
+                    return false;
+                }
                 // Check if token is only one use
                 boolean onlyOneUseToken = (Boolean) tokenData.get("onlyOneUse");
                 if (onlyOneUseToken) {
@@ -236,7 +237,6 @@ public class DownloadRestlet extends BaseNuxeoRestlet {
         if (expirationDate == null) {
             return true;
         }
-        LOG.info("Check Expiration Date " + expirationDate);
         return !Calendar.getInstance().after(expirationDate);
     }
 
