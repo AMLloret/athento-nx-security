@@ -1,0 +1,15 @@
+<anticsrf>
+    <mode>session</mode>
+    <token_attribute>anticsrf-tokenattr</token_attribute>
+    <token_parametername>tok</token_parametername>
+    <logging_configfile>/var/lib/nuxeo/server/nxserver/nuxeo.war/WEB-INF/data/properties/logging.properties</logging_configfile>
+    <monitormode enabled="no"></monitormode>
+    
+    <error mode="redirect">/ErrorServlet</error>
+    
+    <exempt_urls>
+    </exempt_urls>
+    <urlspecific>
+        <url>/nuxeo/login.jsp</url>
+    </urlspecific>
+</anticsrf>

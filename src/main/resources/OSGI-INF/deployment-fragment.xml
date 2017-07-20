@@ -5,6 +5,27 @@
             <java>${bundle.fileName}</java>
         </module>
     </extension>
+    
+    <extension target="web#FILTER">
+        <filter>
+            <display-name>Athento CSRF Controller Filter</display-name>
+            <filter-name>AthentoCSRFFilter</filter-name>
+            <filter-class>
+                org.athento.nuxeo.ecm.platform.web.common.requestcontroller.filter.AthentoCSRFFilter
+            </filter-class>
+            <init-param>
+                <param-name>anticsrf_config</param-name>
+                <param-value>/var/lib/nuxeo/server/nxserver/nuxeo.war/WEB-INF/data/properties/anticsrf.xml</param-value>
+            </init-param>
+        </filter>
+    </extension>
+    <extension target="web#FILTER-MAPPING">
+        <filter-mapping>
+            <filter-name>AthentoCSRFFilter</filter-name>
+            <url-pattern>/*</url-pattern>
+        </filter-mapping>
+    </extension>
+    
     <require>all</require>
     <install>
         <delete path="${bundle.fileName}.tmp" />
@@ -13,12 +34,14 @@
             <include>**/*.properties</include>
         </unzip>
         <copy from="${bundle.fileName}.tmp/web/nuxeo.war" to="/" />
-        <append from="${bundle.fileName}.tmp/i18n/messages.properties"
-                to="nuxeo.war/WEB-INF/classes/messages.properties" addNewLine="true" />
-        <append from="${bundle.fileName}.tmp/i18n/messages_en.properties"
-                to="nuxeo.war/WEB-INF/classes/messages_en.properties" addNewLine="true" />
-        <append from="${bundle.fileName}.tmp/i18n/messages_es.properties"
-                to="nuxeo.war/WEB-INF/classes/messages_es.properties" addNewLine="true" />
+        <copy from="${bundle.fileName}.tmp/data/properties/" to="nuxeo.war/WEB-INF/" />
+        <copy from="${bundle.fileName}.tmp/data/properties/" to="nuxeo.war/WEB-INF/classes/" />
+        <append from="${bundle.fileName}.tmp/i18n/messages.properties" to="nuxeo.war/WEB-INF/classes/messages.properties"
+            addNewLine="true" />
+        <append from="${bundle.fileName}.tmp/i18n/messages_en.properties" to="nuxeo.war/WEB-INF/classes/messages_en.properties"
+            addNewLine="true" />
+        <append from="${bundle.fileName}.tmp/i18n/messages_es.properties" to="nuxeo.war/WEB-INF/classes/messages_es.properties"
+            addNewLine="true" />
         <delete path="${bundle.fileName}.tmp" />
     </install>
 </fragment>
