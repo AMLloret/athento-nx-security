@@ -10,6 +10,7 @@ import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Observer;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.UnrestrictedSessionRunner;
 import org.nuxeo.ecm.platform.ui.web.auth.NuxeoAuthenticationFilter;
 import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.ecm.webapp.helpers.EventNames;
@@ -49,8 +50,8 @@ public class SecuritySessionBean {
     @Observer(EventNames.USER_SESSION_STARTED)
     public void checkExpiredPassword(CoreSession session) {
         NuxeoAuthenticationFilter a;
-        UserManager userManager = Framework.getService(UserManager.class);
-        DocumentModel user = userManager.getUserModel(session.getPrincipal().getName());
+        final UserManager userManager = Framework.getService(UserManager.class);
+        final DocumentModel user = userManager.getUserModel(session.getPrincipal().getName());
         if (user != null) {
             GregorianCalendar lastModificationDate =
                     (GregorianCalendar) user.getPropertyValue("user:lastPasswordModification");
@@ -62,7 +63,13 @@ public class SecuritySessionBean {
                     Calendar gc = GregorianCalendar.getInstance();
                     gc.setTime(lastModificationDatePassword);
                     user.setPropertyValue("user:lastPasswordModification", gc);
-                    userManager.updateUser(user);
+                    // Save user
+                    new UnrestrictedSessionRunner(session) {
+                        @Override
+                        public void run() {
+                            userManager.updateUser(user);
+                        }
+                    }.runUnrestricted();
                 } catch (Exception e) {
                     LOG.error("Unable to set default last modification password", e);
                 }
