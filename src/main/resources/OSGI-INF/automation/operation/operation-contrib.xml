@@ -1,12 +1,15 @@
 <?xml version="1.0"?>
 <component 	name="org.athento.nuxeo.athento-nx-security.operation-contrib"
 	version="1.0.0">
-	
 
 	<extension target="org.nuxeo.ecm.core.operation.OperationServiceComponent"
 		point="operations">
 
 		<!-- Your operation contributions here -->
+
+        <!-- Overrided operations -->
+		<operation class="org.athento.nuxeo.security.operation.AttachBlob" replace="true" />
+        <operation class="org.athento.nuxeo.security.operation.SetDocumentBlob" replace="true" />
 
 	</extension>
 </component>
