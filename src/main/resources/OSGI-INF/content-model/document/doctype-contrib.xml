@@ -7,11 +7,13 @@
         <doctype name="RememberPassword" extends="Document">
             <schema name="dublincore" />
             <facet name="RememberPassword"/>
+            <facet name="HiddenInNavigation" />
         </doctype>
         <doctype name="RememberPasswordContainer" extends="Folder">
             <schema name="common" />
             <schema name="dublincore" />
             <facet name="Folderish" />
+            <facet name="HiddenInNavigation" />
         </doctype>
         <facet name="RememberPassword">
             <schema name="remember"/>
