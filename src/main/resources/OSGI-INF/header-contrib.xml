@@ -3,7 +3,9 @@
 
     <extension target="org.nuxeo.ecm.platform.web.common.requestcontroller.service.RequestControllerService"
                point="responseHeaders">
-        <header name="X-XSS-Protection">1; mode=ock</header>
+        <header name="X-XSS-Protection">1; mode=block</header>
+        <header name="X-Content-Type-Options">nosniff</header>
+        <header name="X-UA-Compatible">IE=10; IE=11</header>
         <header name="Content-Security-Policy">default-src https: 'self'; script-src 'unsafe-inline' 'unsafe-eval' data: *; style-src 'unsafe-inline' *; font-src data: *</header>
     </extension>
 
