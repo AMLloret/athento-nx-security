@@ -27,8 +27,10 @@ public final class MimeUtils {
     private static final String DEFAULT_DOCUMENT_TYPES_RESTRICTED = "File";
     private static final String DEFAULT_MIMETYPES_ALLOWED = "application/vnd.oasis.opendocument.text," +
                                                             "text/xml, text/html, text/plain, text/rtf, text/csv, text/css," +
-                                                            "application/msword, application/msexcel, application/vnd.ms-excel, application/vnd.ms-powerpoint" +
+                                                            "application/msword, application/msexcel, application/vnd.ms-excel, application/vnd.ms-powerpoint," +
                                                             "application/vnd.openxmlformats-officedocument.wordprocessingml.document," +
+                                                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet," +
+                                                            "application/vnd.openxmlformats-officedocument.spreadsheetml.template," +
                                                             "application/vnd.sun.xml.writer, application/vnd.sun.xml.writer.template, " +
                                                             "application/vnd.oasis.opendocument.text," +
                                                             "application/vnd.oasis.opendocument.text-template," +
