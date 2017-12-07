@@ -1,5 +1,6 @@
 package org.athento.nuxeo.security.web;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.athento.nuxeo.security.api.*;
@@ -47,6 +48,17 @@ public class WebSecurityAthento extends ModuleRoot {
         String requestId = formData.getString("RequestId");
         String password = formData.getString("Password");
         String passwordConfirmation = formData.getString("PasswordConfirmation");
+
+        // Check XSS
+        if (isXSSInvalid(requestId)) {
+            requestId = "";
+        }
+        if (isXSSInvalid(password)) {
+            password = "";
+        }
+        if (isXSSInvalid(passwordConfirmation)) {
+            passwordConfirmation = "";
+        }
 
         // Check if the requestId is an existing one
         try {
@@ -141,6 +153,9 @@ public class WebSecurityAthento extends ModuleRoot {
     public Object sendPassword() throws Exception {
         FormData formData = getContext().getForm();
         String email = formData.getString("Email");
+        if (isXSSInvalid(email)) {
+            email = "";
+        }
         if (email == null || email.trim().isEmpty() || !isValidEmailAddress(email)) {
             return redisplayFormWithErrorMessage(
                     "EnterEmail",
@@ -256,10 +271,31 @@ public class WebSecurityAthento extends ModuleRoot {
                                                 String formName, String message, FormData data) {
         Map<String, String> savedData = new HashMap<String, String>();
         for (String key : data.getKeys()) {
-            savedData.put(key, data.getString(key));
+            // XSS Control
+            String formValue = data.getString(key);
+            if (isXSSInvalid(formValue)) {
+                formValue = "";
+            }
+            // Escape value
+            savedData.put(key, formValue);
         }
         return getView(formName).arg("data", savedData).arg(messageType,
                 message);
+    }
+
+    private boolean isXSSInvalid(String formValue) {
+        if (formValue != null) {
+            if (formValue.contains("script")) {
+                return true;
+            }
+            if (formValue.contains("iframe")) {
+                return true;
+            }
+            if (formValue.contains("<") || formValue.contains(">")) {
+                return true;
+            }
+        }
+        return true;
     }
 
     protected Template redisplayFormWithInfoMessage(String formName,
