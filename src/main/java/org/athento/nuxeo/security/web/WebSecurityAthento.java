@@ -50,9 +50,6 @@ public class WebSecurityAthento extends ModuleRoot {
         String passwordConfirmation = formData.getString("PasswordConfirmation");
 
         // Check XSS
-        if (isXSSInvalid(requestId)) {
-            requestId = "";
-        }
         if (isXSSInvalid(password)) {
             password = "";
         }
@@ -295,7 +292,7 @@ public class WebSecurityAthento extends ModuleRoot {
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     protected Template redisplayFormWithInfoMessage(String formName,
