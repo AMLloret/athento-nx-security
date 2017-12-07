@@ -50,9 +50,6 @@ public class WebSecurityAthento extends ModuleRoot {
         String passwordConfirmation = formData.getString("PasswordConfirmation");
 
         // Check XSS
-        if (isXSSInvalid(requestId)) {
-            requestId = "";
-        }
         if (isXSSInvalid(password)) {
             password = "";
         }
@@ -60,13 +57,17 @@ public class WebSecurityAthento extends ModuleRoot {
             passwordConfirmation = "";
         }
 
+        LOG.info("Chaging password for requestId " + requestId);
+
         // Check if the requestId is an existing one
         try {
             rememberPasswordService.checkChangePasswordRequestId(requestId, null);
         } catch (AlreadyRememberPasswordException ape) {
+            LOG.error("Already remember password exception occurred", ape);
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestAlreadyProcessed"));
         } catch (RememberPasswordException ue) {
+            LOG.error("Remember password exception occurred", ue);
             return getView("ChangePasswordErrorTemplate").arg("exceptionMsg",
                     ctx.getMessage("label.error.requestNotExisting", requestId));
         }
@@ -295,7 +296,7 @@ public class WebSecurityAthento extends ModuleRoot {
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     protected Template redisplayFormWithInfoMessage(String formName,
