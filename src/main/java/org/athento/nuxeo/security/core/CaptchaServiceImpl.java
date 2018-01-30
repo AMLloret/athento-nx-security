@@ -38,7 +38,6 @@ public class CaptchaServiceImpl extends DefaultComponent implements CaptchaServi
         Long currentLoginAttempts = (Long) user.getPropertyValue("user:loginAttempts");
         user.setPropertyValue("user:loginAttempts", currentLoginAttempts + 1);
         userManager.updateUser(user);
-        LOG.info("Login attempts for " + user.getPropertyValue("user:username") + " => " + user.getPropertyValue("user:loginAttempts"));
     }
 
     /**

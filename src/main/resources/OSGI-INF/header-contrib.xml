@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<component name="org.nuxeo.athento.headers-contrib">
+
+    <extension target="org.nuxeo.ecm.platform.web.common.requestcontroller.service.RequestControllerService"
+               point="responseHeaders">
+        <header name="X-XSS-Protection">1; mode=ock</header>
+        <header name="Content-Security-Policy">default-src https: 'self'; script-src 'unsafe-inline' 'unsafe-eval' data: *; style-src 'unsafe-inline' *; font-src data: *</header>
+    </extension>
+
+    <extension target="org.nuxeo.ecm.platform.web.common.requestcontroller.service.RequestControllerService" point="corsConfig">
+        <corsConfig name="athentoCors"
+                    allowGenericHttpRequests="true"
+                    allowOrigin="*"
+                    allowSubdomains="true"
+                    supportedHeaders="*"
+                    exposedHeaders="X-RotaryAuthentication-Token"
+                    supportsCredentials="false"
+                    supportedMethods="GET, POST, PUT, HEAD, OPTIONS"
+                    maxAge="3600">
+            <pattern>/nuxeo/.*</pattern>
+        </corsConfig>
+    </extension>
+
+</component>
