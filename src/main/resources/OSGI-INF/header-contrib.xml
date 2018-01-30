@@ -13,7 +13,7 @@
                     allowOrigin="*"
                     allowSubdomains="true"
                     supportedHeaders="*"
-                    exposedHeaders=""
+                    exposedHeaders="X-RotaryAuthentication-Token"
                     supportsCredentials="false"
                     supportedMethods="GET, POST, HEAD, OPTIONS"
                     maxAge="3600">
