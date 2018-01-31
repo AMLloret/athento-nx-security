@@ -40,7 +40,7 @@ public final class MimeUtils {
                                                             "audio/mp3, image/gif, image/png, image/jpg, image/jpeg, image/tiff,"+
                                                             "application/pdf, application/x-gzip, application/csv, audio/aac, video/x-msvideo";
 
-
+    private static final String PROPERTY_CHECK_ENABLED = "plugin.athento-nx-security-limit-file-upload-mime-types.enabled";
     private static final String PROPERTY_DOCUMENT_TYPES = "plugin.athento-nx-security-limit-file-upload-mime-types.documentTypesChecked";
     private static final String PROPERTY_MIMETYPES_ALLOWED = "plugin.athento-nx-security-limit-file-upload-mime-types.mimeTypesAllowed";
     private static final String XPATH_FILE_CONTENT = "file:content";
@@ -114,6 +114,10 @@ public final class MimeUtils {
             return;
         }
         if (getMimeTypesAllowed() == null) {
+            return;
+        }
+        Boolean check = Boolean.valueOf(Framework.getProperty(PROPERTY_CHECK_ENABLED, "true"));
+        if (!check) {
             return;
         }
         boolean allowed;
