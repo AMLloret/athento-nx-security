@@ -115,7 +115,9 @@ public class FormCaptchaAuthenticator implements NuxeoAuthenticationPlugin {
                 httpRequest.setAttribute(LOGIN_ERROR, CAPTCHA_ERROR);
                 return null;
             } else {
-                LOG.info("Reseting login attempts...");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Reseting login attempts...");
+                }
                 // Reset login failed attempts
                 CaptchaService captchaService = Framework.getService(CaptchaService.class);
                 captchaService.resetLoginFailedAttempts(userName);
