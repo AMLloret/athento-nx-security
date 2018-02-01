@@ -54,6 +54,11 @@ public class SecuritySessionBean {
     @Observer(EventNames.USER_SESSION_STARTED)
     public void checkExpiredPassword(CoreSession session) {
         NuxeoAuthenticationFilter a;
+        // Check enabled password control
+        Boolean checkPasswordControlEnabled = Boolean.valueOf(Framework.getProperty("athento.password.control", "true"));
+        if (!checkPasswordControlEnabled) {
+            return;
+        }
         UserManager userManager = Framework.getService(UserManager.class);
         DocumentModel user = userManager.getUserModel(session.getPrincipal().getName());
         if (user != null) {
