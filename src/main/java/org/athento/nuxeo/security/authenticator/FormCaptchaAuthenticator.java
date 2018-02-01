@@ -134,16 +134,20 @@ public class FormCaptchaAuthenticator implements NuxeoAuthenticationPlugin {
                 if (userField.isEmpty()) {
                     continue;
                 }
-                Map<String, Serializable> fields = new HashMap<>();
-                fields.put(userField.trim(), userName);
-                DocumentModelList users = userManager.searchUsers(fields, null);
-                if (!users.isEmpty()) {
-                    DocumentModel user = users.get(0);
-                    userName = (String) user.getPropertyValue("user:username");
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Username to use " + userName);
+                try {
+                    Map<String, Serializable> fields = new HashMap<>();
+                    fields.put(userField.trim(), userName);
+                    DocumentModelList users = userManager.searchUsers(fields, null);
+                    if (!users.isEmpty()) {
+                        DocumentModel user = users.get(0);
+                        userName = (String) user.getPropertyValue("user:username");
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Username to use " + userName);
+                        }
+                        break;
                     }
-                    break;
+                } catch (Exception e) {
+                    LOG.error("Unable to check alternative field " + userField.trim(), e);
                 }
             }
 
