@@ -3,14 +3,19 @@ package org.athento.nuxeo.security.authenticator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.common.utils.URIUtils;
+import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.DocumentModelList;
 import org.nuxeo.ecm.platform.api.login.UserIdentificationInfo;
 import org.nuxeo.ecm.platform.ui.web.auth.interfaces.NuxeoAuthenticationPlugin;
 import org.nuxeo.ecm.platform.ui.web.auth.plugins.FormAuthenticator;
+import org.nuxeo.ecm.platform.usermanager.UserManager;
+import org.nuxeo.runtime.api.Framework;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 import static org.nuxeo.ecm.platform.ui.web.auth.NXAuthConstants.*;
@@ -109,6 +114,34 @@ public class FormCaptchaAuthenticator implements NuxeoAuthenticationPlugin {
         }
         if (userName == null || userName.length() == 0) {
             return null;
+        }
+        // Lookup for username
+        UserManager userManager = Framework.getService(UserManager.class);
+        DocumentModel userModel = userManager.getUserModel(userName);
+        if (userModel == null) {
+            // Find user for other fields
+            String [] userFields = Framework.getProperty("athento.login.alternativefields", "").split(",");
+            for (String userField : userFields) {
+                if (userField.isEmpty()) {
+                    continue;
+                }
+                try {
+                    Map<String, Serializable> fields = new HashMap<>();
+                    fields.put(userField.trim(), userName);
+                    DocumentModelList users = userManager.searchUsers(fields, null);
+                    if (!users.isEmpty()) {
+                        DocumentModel user = users.get(0);
+                        userName = (String) user.getPropertyValue("user:username");
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Username to use " + userName);
+                        }
+                        break;
+                    }
+                } catch (Exception e) {
+                    LOG.error("Unable to get alternative field " + userField, e);
+                }
+            }
+
         }
         return new UserIdentificationInfo(userName, password);
     }
