@@ -39,7 +39,6 @@ Nuxeo-Component: OSGI-INF/automation/automation-chain/chain-contrib.xml,
  OSGI-INF/workflow/workflow-contrib.xml,
  OSGI-INF/remember-service-framework.xml,
  OSGI-INF/authentication-contrib.xml,
- OSGI-INF/captcha-service-framework.xml,
  OSGI-INF/listener-contrib.xml,
  OSGI-INF/header-contrib.xml
 Created-By: Athento

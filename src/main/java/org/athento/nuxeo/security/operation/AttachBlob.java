@@ -2,7 +2,6 @@ package org.athento.nuxeo.security.operation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.athento.nuxeo.security.util.MimeUtils;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -39,7 +38,7 @@ public class AttachBlob {
     public Blob run(Blob blob) throws Exception {
         Blob returnedValue;
         // will throw an Exception if is not allowed (if DocType and mimeType match)
-        MimeUtils.checkMimeType(blob);
+        //MimeUtils.checkMimeType(blob);
         returnedValue = attachBlob(blob);
         return returnedValue;
     }

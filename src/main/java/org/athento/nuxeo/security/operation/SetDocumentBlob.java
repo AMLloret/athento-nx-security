@@ -1,6 +1,5 @@
 package org.athento.nuxeo.security.operation;
 
-import org.athento.nuxeo.security.util.MimeUtils;
 import org.nuxeo.ecm.automation.core.Constants;
 import org.nuxeo.ecm.automation.core.annotations.Context;
 import org.nuxeo.ecm.automation.core.annotations.Operation;
@@ -35,7 +34,7 @@ public class SetDocumentBlob {
 
     @OperationMethod(collector = DocumentModelCollector.class)
     public DocumentModel run(DocumentModel doc) throws Exception {
-        MimeUtils.checkMimeType(blob);
+        //MimeUtils.checkMimeType(blob);
         attachBlob(doc, blob);
         return doc;
     }
