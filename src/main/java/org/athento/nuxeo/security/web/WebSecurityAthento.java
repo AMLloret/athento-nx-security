@@ -1,6 +1,5 @@
 package org.athento.nuxeo.security.web;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.athento.nuxeo.security.api.*;

@@ -26,7 +26,10 @@ import javax.mail.internet.MimeMessage;
 import javax.naming.InitialContext;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Remember password component.

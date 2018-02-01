@@ -1,7 +1,6 @@
 package org.athento.nuxeo.security.api;
 
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
 /**

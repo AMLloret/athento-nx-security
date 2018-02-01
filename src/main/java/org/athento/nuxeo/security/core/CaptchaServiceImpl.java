@@ -9,10 +9,6 @@ import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.model.DefaultComponent;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
-import java.security.Principal;
-
 /**
  * Captcha service.
  */

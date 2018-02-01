@@ -5,13 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.athento.nuxeo.security.api.InvalidPasswordException;
 import org.athento.nuxeo.security.api.RememberPasswordSave;
 import org.athento.nuxeo.security.api.RememberPasswordService;
-import org.athento.nuxeo.security.core.RememberPasswordComponent;
 import org.athento.nuxeo.security.util.PasswordHelper;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Install;
 import org.jboss.seam.annotations.Name;
-import static org.jboss.seam.ScopeType.CONVERSATION;
-
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.core.Events;
 import org.jboss.seam.faces.FacesMessages;
@@ -20,7 +17,6 @@ import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.repository.RepositoryManager;
 import org.nuxeo.ecm.platform.ui.web.util.ComponentUtils;
 import org.nuxeo.ecm.webapp.helpers.ResourcesAccessor;
-import org.nuxeo.ecm.webapp.security.AbstractUserGroupManagement;
 import org.nuxeo.ecm.webapp.security.UserManagementActions;
 import org.nuxeo.runtime.api.Framework;
 
@@ -31,6 +27,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import java.io.Serializable;
 import java.util.Map;
+
+import static org.jboss.seam.ScopeType.CONVERSATION;
 
 /**
  * User action bean.

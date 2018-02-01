@@ -1,6 +1,5 @@
 package org.athento.nuxeo.security.ejb;
 
-import freemarker.template.SimpleDate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.athento.nuxeo.security.api.ChangePasswordMode;
@@ -9,20 +8,16 @@ import org.athento.nuxeo.security.util.PasswordHelper;
 import org.jboss.seam.annotations.Install;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Observer;
-import org.jboss.seam.faces.Redirect;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.platform.ui.web.auth.NuxeoAuthenticationFilter;
 import org.nuxeo.ecm.platform.usermanager.UserManager;
 import org.nuxeo.ecm.webapp.helpers.EventNames;
 import org.nuxeo.runtime.api.Framework;
-import sun.util.calendar.Gregorian;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,6 +49,11 @@ public class SecuritySessionBean {
     @Observer(EventNames.USER_SESSION_STARTED)
     public void checkExpiredPassword(CoreSession session) {
         NuxeoAuthenticationFilter a;
+        // Check enabled password control
+        Boolean checkPasswordControlEnabled = Boolean.valueOf(Framework.getProperty("athento.password.control", "true"));
+        if (!checkPasswordControlEnabled) {
+            return;
+        }
         UserManager userManager = Framework.getService(UserManager.class);
         DocumentModel user = userManager.getUserModel(session.getPrincipal().getName());
         if (user != null) {
