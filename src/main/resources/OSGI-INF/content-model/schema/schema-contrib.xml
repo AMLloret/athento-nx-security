@@ -4,7 +4,6 @@
 		   version="1.0.0">
 
     <require>org.nuxeo.ecm.directory.types</require>
-	<require>org.athento.nuxeo.athento-nx-user-extended.schemas</require>
 
 	<extension target="org.nuxeo.ecm.core.schema.TypeService"
 			   point="schema">
