@@ -18,6 +18,36 @@
             </parameters>
         </authenticationPlugin>
 
+<<<<<<< HEAD
+=======
+        <authenticationPlugin name="AUTOMATION_BASIC_AUTH" enabled="true">
+            <parameters>
+                <parameter name="ExcludeBAHeader_Token">X-RotaryAuthentication-Token</parameter>
+            </parameters>
+        </authenticationPlugin>
+
+        <authenticationPlugin name="ROTARYTOKEN_AUTH"
+                              enabled="true"
+                              class="org.athento.nuxeo.security.authenticator.RotaryTokenAuthenticator">
+            <loginModulePlugin>Trusting_LM</loginModulePlugin>
+        </authenticationPlugin>
+
+    </extension>
+
+    <extension
+            target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService"
+            point="specificChains">
+
+        <specificAuthenticationChain name="RotaryTokenAuth">
+            <headers>
+                <header name="X-RotaryAuthentication-Token">.*</header>
+            </headers>
+            <replacementChain>
+                <plugin>ROTARYTOKEN_AUTH</plugin>
+            </replacementChain>
+        </specificAuthenticationChain>
+
+>>>>>>> b45c38b... Change authentication remove rotary-token by default
     </extension>
 
     <extension
