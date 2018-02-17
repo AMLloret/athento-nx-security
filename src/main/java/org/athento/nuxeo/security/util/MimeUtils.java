@@ -81,16 +81,10 @@ public final class MimeUtils {
         }
     }
 
-    /**
-     * @return the includedDocumentTypes
-     */
     public static List<String> getIncludedDocumentTypes() {
         return includedDocumentTypes;
     }
 
-    /**
-     * @return the mimeTypesAllowed
-     */
     public static List<String> getMimeTypesAllowed() {
         return mimeTypesAllowed;
     }
@@ -173,4 +167,5 @@ public final class MimeUtils {
         }
         return false;
     }
+
 }
