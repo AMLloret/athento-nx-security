@@ -1,22 +1,19 @@
 package org.athento.nuxeo.security.util;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.athento.nuxeo.security.api.TokenException;
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.nuxeo.runtime.api.Framework;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.security.*;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-
 /**
  * Sign helper.
  */
@@ -73,7 +70,7 @@ public final class SignHelper {
      * @throws InvalidKeySpecException
      * @throws TokenException
      */
-    private static KeyPair getKeyPair() throws NoSuchAlgorithmException, InvalidKeyException, IOException, InvalidKeySpecException, TokenException {
+    private static KeyPair getKeyPair() throws NoSuchAlgorithmException, InvalidKeyException, IOException, InvalidKeySpecException, TokenException, NoSuchProviderException {
         String privateKeyFilename;
         if (Framework.isInitialized()) {
             privateKeyFilename = Framework.getProperty("athento.key.filename");
@@ -103,13 +100,13 @@ public final class SignHelper {
     private static PrivateKey readPrivateKey(String filename) throws
             java.io.IOException,
             java.security.NoSuchAlgorithmException,
-            java.security.spec.InvalidKeySpecException {
-        String pemString = FileUtils.readFileToString(new File(filename));
+            java.security.spec.InvalidKeySpecException, NoSuchProviderException {
+        /*String pemString = FileUtils.readFileToString(new File(filename));
         pemString = pemString.replace("-----BEGIN RSA PRIVATE KEY-----\n", "");
         pemString = pemString.replace("-----END RSA PRIVATE KEY-----", "");
-        pemString = pemString.replaceAll("\\s+","");
-        byte[] data = Base64.decodeBase64(pemString);
-        ASN1EncodableVector v = new ASN1EncodableVector();
+        pemString = pemString.replaceAll("\\s+","");*/
+        //byte[] data = Base64.decodeBase64(pemString);
+        /*ASN1EncodableVector v = new ASN1EncodableVector();
         v.add(new ASN1Integer(0));
         ASN1EncodableVector v2 = new ASN1EncodableVector();
         v2.add(new ASN1ObjectIdentifier(PKCSObjectIdentifiers.rsaEncryption.getId()));
@@ -120,7 +117,20 @@ public final class SignHelper {
         byte[] privKey = seq.getEncoded("DER");
         PKCS8EncodedKeySpec spec = new  PKCS8EncodedKeySpec(privKey);
         KeyFactory fact = KeyFactory.getInstance("RSA");
-        return fact.generatePrivate(spec);
+        return fact.generatePrivate(spec);*/
+        KeyFactory factory = KeyFactory.getInstance("RSA", "BC");
+        PemReader pemReader = new PemReader(new InputStreamReader(
+                new FileInputStream(filename)));
+        try {
+            PemObject pemObject = pemReader.readPemObject();
+            byte[] content = pemObject.getContent();
+            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(content);
+            return factory.generatePrivate(privKeySpec);
+        } finally {
+            pemReader.close();
+        }
+
+
     }
 
 }
