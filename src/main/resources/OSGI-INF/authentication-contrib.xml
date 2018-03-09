@@ -45,6 +45,17 @@
             </replacementChain>
         </specificAuthenticationChain>
 
+        <specificAuthenticationChain name="Automation">
+            <urlPatterns>
+                <url>(.*)/automation.*</url>
+            </urlPatterns>
+            <replacementChain>
+                <plugin>AUTOMATION_BASIC_AUTH</plugin>
+                <plugin>ROTARYTOKEN_AUTH</plugin>
+                <plugin>ANONYMOUS_AUTH</plugin>
+            </replacementChain>
+        </specificAuthenticationChain>
+
     </extension>
 
     <extension
