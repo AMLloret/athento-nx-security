@@ -45,8 +45,6 @@
             </replacementChain>
         </specificAuthenticationChain>
 
-<<<<<<< HEAD
-=======
         <specificAuthenticationChain name="Automation">
             <urlPatterns>
                 <url>(.*)/automation.*</url>
@@ -58,7 +56,6 @@
             </replacementChain>
         </specificAuthenticationChain>
 
->>>>>>> a84e4c6... Add RotaryTokenAuthenticator
     </extension>
 
     <extension
