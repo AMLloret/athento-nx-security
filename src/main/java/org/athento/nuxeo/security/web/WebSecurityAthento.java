@@ -291,6 +291,9 @@ public class WebSecurityAthento extends ModuleRoot {
             if (formValue.contains("<") || formValue.contains(">")) {
                 return true;
             }
+            if (formValue.contains("\"")) {
+                return true;
+            }
         }
         return false;
     }
